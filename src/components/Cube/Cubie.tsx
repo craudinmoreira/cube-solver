@@ -1,6 +1,7 @@
-import React from 'react';
-import * as THREE from 'three';
-import type { CubieState } from '../../utils/cubeLogic';
+import React from "react";
+import { RoundedBox } from "@react-three/drei";
+import * as THREE from "three";
+import type { CubieState } from "../../utils/cubeLogic";
 
 interface CubieProps {
   cubieState: CubieState;
@@ -9,63 +10,104 @@ interface CubieProps {
   isPartOAnimatingLayer: boolean;
 }
 
-// Cores das faces: Direita(X+), Esquerda(X-), Cima(Y+), Baixo(Y-), Frente(Z+), Trás(Z-)
-const colors = {
-  right: '#B90000',  // Red
-  left: '#FF5900',   // Orange
-  top: '#FFFFFF',    // White
-  bottom: '#FFD500', // Yellow
-  front: '#009B48',  // Green
-  back: '#0045AD',   // Blue
-  core: '#222222'    // Black/Dark Gray for inner plastic
+// Paleta pastel inspirada no cubo clássico
+const COLORS = {
+  right: "#F87171", // vermelho pastel
+  left: "#FDBA74", // laranja pastel
+  top: "#F8FAFC", // branco suave
+  bottom: "#FDE68A", // amarelo pastel
+  front: "#86EFAC", // verde pastel
+  back: "#93C5FD", // azul pastel
+  core: "#1C1C1E", // plástico escuro
 };
 
-export const Cubie: React.FC<CubieProps> = ({ cubieState, isPartOAnimatingLayer, animatingGroupRef }) => {
-  const meshRef = React.useRef<THREE.Mesh>(null);
+const STICKER_OFFSET = 0.482;
+const STICKER_SIZE: [number, number] = [0.73, 0.73];
+const STICKER_PROPS = {
+  roughness: 0.12,
+  metalness: 0.0,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.08,
+} as const;
 
-  // Define as cores com base na posição inicial (id é gerado previsivelmente)
-  const initX = cubieState.id % 3 === 2 ? 1 : cubieState.id % 3 === 0 ? -1 : 0;
-  const initY = Math.floor((cubieState.id % 9) / 3) === 2 ? 1 : Math.floor((cubieState.id % 9) / 3) === 0 ? -1 : 0;
-  const initZ = Math.floor(cubieState.id / 9) === 2 ? 1 : Math.floor(cubieState.id / 9) === 0 ? -1 : 0;
+export const Cubie: React.FC<CubieProps> = ({ cubieState }) => {
+  // Ordem de geração: x outermost → y → z innermost  ⟹  id = (x+1)*9 + (y+1)*3 + (z+1)
+  const initX =
+    Math.floor(cubieState.id / 9) === 2
+      ? 1
+      : Math.floor(cubieState.id / 9) === 0
+        ? -1
+        : 0;
+  const initY =
+    Math.floor((cubieState.id % 9) / 3) === 2
+      ? 1
+      : Math.floor((cubieState.id % 9) / 3) === 0
+        ? -1
+        : 0;
+  const initZ = cubieState.id % 3 === 2 ? 1 : cubieState.id % 3 === 0 ? -1 : 0;
 
-  // Os materiais do BoxGeometry no Three.js seguem a ordem: Right, Left, Top, Bottom, Front, Back
-  const materials = React.useMemo(() => {
-    return [
-      new THREE.MeshStandardMaterial({ color: initX === 1 ? colors.right : colors.core, roughness: 0.1, metalness: 0.1 }),
-      new THREE.MeshStandardMaterial({ color: initX === -1 ? colors.left : colors.core, roughness: 0.1, metalness: 0.1 }),
-      new THREE.MeshStandardMaterial({ color: initY === 1 ? colors.top : colors.core, roughness: 0.1, metalness: 0.1 }),
-      new THREE.MeshStandardMaterial({ color: initY === -1 ? colors.bottom : colors.core, roughness: 0.1, metalness: 0.1 }),
-      new THREE.MeshStandardMaterial({ color: initZ === 1 ? colors.front : colors.core, roughness: 0.1, metalness: 0.1 }),
-      new THREE.MeshStandardMaterial({ color: initZ === -1 ? colors.back : colors.core, roughness: 0.1, metalness: 0.1 }),
-    ];
-  }, [initX, initY, initZ]);
-
-  // Posiciona a peça no grupo de animação ou no cena global
-  React.useEffect(() => {
-    if (meshRef.current) {
-      if (isPartOAnimatingLayer && animatingGroupRef.current) {
-        animatingGroupRef.current.add(meshRef.current);
-      } else {
-        // Volta para a cena original, mas a propriedade parent é gerenciada pelo R3F.
-        // Como o R3F reconstrói o nó, isso será lidado de forma declarativa renderizando dentro ou fora do <group>.
-      }
-    }
-  }, [isPartOAnimatingLayer, animatingGroupRef]);
+  const quaternion = React.useMemo(
+    () => new THREE.Quaternion(...cubieState.quaternion),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      cubieState.quaternion[0],
+      cubieState.quaternion[1],
+      cubieState.quaternion[2],
+      cubieState.quaternion[3],
+    ],
+  );
 
   return (
-    <mesh
-      ref={meshRef}
-      position={cubieState.position}
-      quaternion={new THREE.Quaternion(...cubieState.quaternion)}
-      material={materials}
-    >
-      {/* Box reduzido ligeiramente para dar o espaçamento entre as peças */}
-      <boxGeometry args={[0.96, 0.96, 0.96]} />
-      {/* Bordas pretas da peça */}
-      <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry(0.96, 0.96, 0.96)]} />
-        <lineBasicMaterial color="#000000" linewidth={2} />
-      </lineSegments>
-    </mesh>
+    <group position={cubieState.position} quaternion={quaternion}>
+      {/* Corpo arredondado (plástico escuro) */}
+      <RoundedBox args={[0.94, 0.94, 0.94]} radius={0.09} smoothness={4}>
+        <meshStandardMaterial
+          color={COLORS.core}
+          roughness={0.45}
+          metalness={0.1}
+        />
+      </RoundedBox>
+
+      {/* Stickers coloridos por face */}
+      {initX === 1 && (
+        <mesh position={[STICKER_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+          <planeGeometry args={STICKER_SIZE} />
+          <meshPhysicalMaterial color={COLORS.right} {...STICKER_PROPS} />
+        </mesh>
+      )}
+      {initX === -1 && (
+        <mesh
+          position={[-STICKER_OFFSET, 0, 0]}
+          rotation={[0, -Math.PI / 2, 0]}
+        >
+          <planeGeometry args={STICKER_SIZE} />
+          <meshPhysicalMaterial color={COLORS.left} {...STICKER_PROPS} />
+        </mesh>
+      )}
+      {initY === 1 && (
+        <mesh position={[0, STICKER_OFFSET, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={STICKER_SIZE} />
+          <meshPhysicalMaterial color={COLORS.top} {...STICKER_PROPS} />
+        </mesh>
+      )}
+      {initY === -1 && (
+        <mesh position={[0, -STICKER_OFFSET, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <planeGeometry args={STICKER_SIZE} />
+          <meshPhysicalMaterial color={COLORS.bottom} {...STICKER_PROPS} />
+        </mesh>
+      )}
+      {initZ === 1 && (
+        <mesh position={[0, 0, STICKER_OFFSET]}>
+          <planeGeometry args={STICKER_SIZE} />
+          <meshPhysicalMaterial color={COLORS.front} {...STICKER_PROPS} />
+        </mesh>
+      )}
+      {initZ === -1 && (
+        <mesh position={[0, 0, -STICKER_OFFSET]} rotation={[0, Math.PI, 0]}>
+          <planeGeometry args={STICKER_SIZE} />
+          <meshPhysicalMaterial color={COLORS.back} {...STICKER_PROPS} />
+        </mesh>
+      )}
+    </group>
   );
 };

@@ -1,15 +1,15 @@
-import React, { useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import * as THREE from 'three';
-import { useCubeStore } from '../../store/useCubeStore';
-import { Cubie } from './Cubie';
-import { moveDetails } from '../../utils/cubeLogic';
+import React, { useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import * as THREE from "three";
+import { useCubeStore } from "../../store/useCubeStore";
+import { Cubie } from "./Cubie";
+import { moveDetails } from "../../utils/cubeLogic";
 
 export const RubiksCube: React.FC = () => {
   const { cubies, isAnimating, currentMove, finishAnimation } = useCubeStore();
   const animatingGroupRef = useRef<THREE.Group>(null);
-  
+
   // Controle de progresso da animação (de 0 a 1)
   const [animProgress, setAnimProgress] = useState(0);
 
@@ -17,15 +17,18 @@ export const RubiksCube: React.FC = () => {
     if (isAnimating && currentMove && animatingGroupRef.current) {
       const speed = 4.0; // Velocidade da animação (ajustável)
       const nextProgress = Math.min(animProgress + delta * speed, 1);
-      
+
       const { axis, angle } = moveDetails[currentMove];
-      
+
       // Reseta a rotação do grupo para evitar soma contínua antes de setar o valor final
       animatingGroupRef.current.rotation.set(0, 0, 0);
-      
-      if (axis === 'x') animatingGroupRef.current.rotation.x = angle * nextProgress;
-      if (axis === 'y') animatingGroupRef.current.rotation.y = angle * nextProgress;
-      if (axis === 'z') animatingGroupRef.current.rotation.z = angle * nextProgress;
+
+      if (axis === "x")
+        animatingGroupRef.current.rotation.x = angle * nextProgress;
+      if (axis === "y")
+        animatingGroupRef.current.rotation.y = angle * nextProgress;
+      if (axis === "z")
+        animatingGroupRef.current.rotation.z = angle * nextProgress;
 
       setAnimProgress(nextProgress);
 
@@ -40,16 +43,24 @@ export const RubiksCube: React.FC = () => {
 
   return (
     <>
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
-      <directionalLight position={[-5, -5, -5]} intensity={0.5} />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow />
+      <directionalLight position={[-4, 3, -5]} intensity={0.6} />
+      <pointLight position={[0, 6, 4]} intensity={0.8} color="#ffffff" />
+      <pointLight position={[4, -4, 4]} intensity={0.4} color="#e0f0ff" />
 
       <group>
+        {/* Núcleo sólido: tampa o interior do cubo evitando ver através dos gaps */}
+        <mesh>
+          <boxGeometry args={[2.88, 2.88, 2.88]} />
+          <meshStandardMaterial color="#1C1C1E" roughness={1} metalness={0} />
+        </mesh>
+
         {cubies.map((cubie) => {
           let isPart = false;
           if (isAnimating && currentMove) {
             const { axis, layer } = moveDetails[currentMove];
-            const posIndex = axis === 'x' ? 0 : axis === 'y' ? 1 : 2;
+            const posIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
             isPart = Math.round(cubie.position[posIndex]) === layer;
           }
 
@@ -74,9 +85,9 @@ export const RubiksCube: React.FC = () => {
             currentMove &&
             cubies.map((cubie) => {
               const { axis, layer } = moveDetails[currentMove];
-              const posIndex = axis === 'x' ? 0 : axis === 'y' ? 1 : 2;
+              const posIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
               const isPart = Math.round(cubie.position[posIndex]) === layer;
-              
+
               if (!isPart) return null;
 
               return (
