@@ -1,12 +1,30 @@
-:root {
-  --bg-color: #1a1a1a;
-  --panel-bg: #2d2d2d;
-  --text-color: #ffffff;
-  --border-color: #404040;
-  --accent-color: #3b82f6;
-  --accent-hover: #2563eb;
-  --disabled-color: #555555;
-  --danger-color: #ef4444;
+/* Tema escuro (padrão) — tons pastéis sobre fundo escuro */
+:root,
+:root[data-theme='dark'] {
+  --bg-color: #1e1e2e;
+  --panel-bg: #2a2a3e;
+  --text-color: #e2e8f0;
+  --border-color: #3d3d5c;
+  --accent-color: #a5b4fc;
+  --accent-hover: #818cf8;
+  --disabled-color: #4a4a6a;
+  --danger-color: #fca5a5;
+  --toggle-bg: #3d3d5c;
+  --toggle-hover: #4f4f72;
+}
+
+/* Tema claro — tons pastéis sobre fundo suave */
+:root[data-theme='light'] {
+  --bg-color: #eef2ff;
+  --panel-bg: #ffffff;
+  --text-color: #2d3748;
+  --border-color: #c7d2fe;
+  --accent-color: #6366f1;
+  --accent-hover: #4f46e5;
+  --disabled-color: #a5b4fc;
+  --danger-color: #f87171;
+  --toggle-bg: #e0e7ff;
+  --toggle-hover: #c7d2fe;
 }
 
 * {
@@ -33,12 +51,36 @@ body {
   padding: 1rem 2rem;
   background-color: var(--panel-bg);
   border-bottom: 1px solid var(--border-color);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
 .header h1 {
   font-size: 1.5rem;
   margin: 0;
+}
+
+.theme-toggle {
+  position: absolute;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: var(--toggle-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.theme-toggle:hover {
+  background-color: var(--toggle-hover);
+  transform: scale(1.08);
 }
 
 .main-content {
@@ -50,6 +92,7 @@ body {
 .cube-container {
   flex: 1;
   position: relative;
+  background-color: var(--bg-color);
   /* Garante que o Canvas do Three.js ocupe todo o espaço */
   min-width: 0;
 }
