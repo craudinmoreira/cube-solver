@@ -1,0 +1,183 @@
+:root {
+  --bg-color: #1a1a1a;
+  --panel-bg: #2d2d2d;
+  --text-color: #ffffff;
+  --border-color: #404040;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --disabled-color: #555555;
+  --danger-color: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  overflow: hidden; /* Evita scroll na página principal */
+}
+
+/* Layout Principal */
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.header {
+  padding: 1rem 2rem;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.cube-container {
+  flex: 1;
+  position: relative;
+  /* Garante que o Canvas do Three.js ocupe todo o espaço */
+  min-width: 0;
+}
+
+.sidebar {
+  width: 320px;
+  background-color: var(--panel-bg);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Painel de Controles */
+.controls-panel {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.controls-panel h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.control-button {
+  background-color: var(--border-color);
+  color: var(--text-color);
+  border: none;
+  padding: 0.8rem 0;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.control-button:hover:not(:disabled) {
+  background-color: var(--accent-color);
+}
+
+.control-button:disabled {
+  background-color: var(--disabled-color);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Painel de Histórico */
+.history-panel {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.history-header h2 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.undo-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+
+.undo-button:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.undo-button:disabled {
+  background-color: var(--disabled-color);
+  cursor: not-allowed;
+}
+
+.history-list {
+  flex: 1;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.empty-text {
+  color: #888;
+  text-align: center;
+  font-style: italic;
+  margin-top: 1rem;
+}
+
+.history-item {
+  display: flex;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.move-number {
+  color: #888;
+  width: 30px;
+}
+
+.move-name {
+  font-weight: bold;
+  color: var(--accent-color);
+}
