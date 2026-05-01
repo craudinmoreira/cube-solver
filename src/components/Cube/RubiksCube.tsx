@@ -50,12 +50,6 @@ export const RubiksCube: React.FC = () => {
       <pointLight position={[4, -4, 4]} intensity={0.4} color="#e0f0ff" />
 
       <group>
-        {/* Núcleo sólido: tampa o interior do cubo evitando ver através dos gaps */}
-        <mesh>
-          <boxGeometry args={[2.88, 2.88, 2.88]} />
-          <meshStandardMaterial color="#1C1C1E" roughness={1} metalness={0} />
-        </mesh>
-
         {cubies.map((cubie) => {
           let isPart = false;
           if (isAnimating && currentMove) {

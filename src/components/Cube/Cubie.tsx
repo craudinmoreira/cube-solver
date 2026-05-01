@@ -21,6 +21,11 @@ const COLORS = {
   core: "#1C1C1E", // plástico escuro
 };
 
+// Planos internos tapam os gaps sem interferir na animação.
+// Ficam recuados em 0.47 (dentro do gap de 0.03 entre cubies).
+const FILL_OFFSET = 0.47;
+const FILL_SIZE: [number, number] = [0.94, 0.94];
+
 const STICKER_OFFSET = 0.482;
 const STICKER_SIZE: [number, number] = [0.73, 0.73];
 const STICKER_PROPS = {
@@ -106,6 +111,68 @@ export const Cubie: React.FC<CubieProps> = ({ cubieState }) => {
         <mesh position={[0, 0, -STICKER_OFFSET]} rotation={[0, Math.PI, 0]}>
           <planeGeometry args={STICKER_SIZE} />
           <meshPhysicalMaterial color={COLORS.back} {...STICKER_PROPS} />
+        </mesh>
+      )}
+
+      {/* Planos de fechamento interno: tapam os gaps nas faces não-externas */}
+      {initX !== 1 && (
+        <mesh position={[FILL_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+          <planeGeometry args={FILL_SIZE} />
+          <meshStandardMaterial
+            color={COLORS.core}
+            roughness={1}
+            metalness={0}
+          />
+        </mesh>
+      )}
+      {initX !== -1 && (
+        <mesh position={[-FILL_OFFSET, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+          <planeGeometry args={FILL_SIZE} />
+          <meshStandardMaterial
+            color={COLORS.core}
+            roughness={1}
+            metalness={0}
+          />
+        </mesh>
+      )}
+      {initY !== 1 && (
+        <mesh position={[0, FILL_OFFSET, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={FILL_SIZE} />
+          <meshStandardMaterial
+            color={COLORS.core}
+            roughness={1}
+            metalness={0}
+          />
+        </mesh>
+      )}
+      {initY !== -1 && (
+        <mesh position={[0, -FILL_OFFSET, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <planeGeometry args={FILL_SIZE} />
+          <meshStandardMaterial
+            color={COLORS.core}
+            roughness={1}
+            metalness={0}
+          />
+        </mesh>
+      )}
+      {initZ !== 1 && (
+        <mesh position={[0, 0, FILL_OFFSET]}>
+          <planeGeometry args={FILL_SIZE} />
+          <meshStandardMaterial
+            color={COLORS.core}
+            roughness={1}
+            metalness={0}
+          />
+        </mesh>
+      )}
+      {initZ !== -1 && (
+        <mesh position={[0, 0, -FILL_OFFSET]} rotation={[0, Math.PI, 0]}>
+          <planeGeometry args={FILL_SIZE} />
+          <meshStandardMaterial
+            color={COLORS.core}
+            roughness={1}
+            metalness={0}
+          />
         </mesh>
       )}
     </group>
