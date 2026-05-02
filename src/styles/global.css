@@ -262,11 +262,6 @@ body {
 }
 
 /* Face Labels */
-@keyframes faceLabelFadeIn {
-  0% { opacity: 0; transform: scale(0.5); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
 .face-label {
   display: flex;
   align-items: center;
@@ -280,7 +275,19 @@ body {
   color: var(--text-color);
   border: 2px solid var(--border-color);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  animation: faceLabelFadeIn 0.3s ease-out forwards;
   pointer-events: none; /* Permite girar o cubo através da legenda */
   user-select: none;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.face-label.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.face-label.hidden {
+  opacity: 0;
+  transform: scale(0.5);
 }

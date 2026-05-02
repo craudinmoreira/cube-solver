@@ -1,14 +1,54 @@
 import React, { useRef, useState } from "react";
-import { useFrame } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
+import { TrackballControls, Html, GizmoHelper, GizmoViewcube } from "@react-three/drei";
 import * as THREE from "three";
 import { useCubeStore } from "../../store/useCubeStore";
 import { Cubie } from "./Cubie";
+import { ViewCubeArrows } from "./ViewCubeArrows";
+import { TrackballControls as TrackballControlsImpl } from "three-stdlib";
 import { moveDetails } from "../../utils/cubeLogic";
 
 export const RubiksCube: React.FC = () => {
   const { cubies, isAnimating, currentMove, finishAnimation, showFaceLabels } = useCubeStore();
   const animatingGroupRef = useRef<THREE.Group>(null);
+  const controlsRef = useRef<TrackballControlsImpl>(null);
+  const { camera, invalidate } = useThree();
+
+  const handleRotateView = (axis: 'x' | 'y' | 'z', direction: 1 | -1) => {
+    if (!controlsRef.current) return;
+    const controls = controlsRef.current;
+    const target = controls.target;
+    
+    const angle = (15 * Math.PI) / 180 * direction; // 15 degrees
+    
+    // Calculate view direction
+    const viewDir = new THREE.Vector3().subVectors(target, camera.position).normalize();
+    
+    // Calculate local axes
+    const rightDir = new THREE.Vector3().crossVectors(viewDir, camera.up).normalize();
+    const upDir = new THREE.Vector3().crossVectors(rightDir, viewDir).normalize();
+    
+    const quaternion = new THREE.Quaternion();
+    
+    if (axis === 'x') {
+      quaternion.setFromAxisAngle(rightDir, angle);
+    } else if (axis === 'y') {
+      quaternion.setFromAxisAngle(upDir, angle);
+    } else if (axis === 'z') {
+      quaternion.setFromAxisAngle(viewDir, angle);
+    }
+    
+    // Apply rotation to position relative to target
+    const offset = new THREE.Vector3().subVectors(camera.position, target);
+    offset.applyQuaternion(quaternion);
+    camera.position.copy(target).add(offset);
+    
+    // Apply rotation to up vector
+    camera.up.applyQuaternion(quaternion);
+    
+    controls.update();
+    invalidate();
+  };
 
   // Controle de progresso da animação (de 0 a 1)
   const [animProgress, setAnimProgress] = useState(0);
@@ -97,30 +137,38 @@ export const RubiksCube: React.FC = () => {
         </group>
       </group>
 
-      {showFaceLabels && (
-        <group>
-          <Html position={[0, 2.2, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} occlude>
-            <div className="face-label">U</div>
-          </Html>
-          <Html position={[0, -2.2, 0]} center transform rotation={[Math.PI / 2, 0, 0]} occlude>
-            <div className="face-label">D</div>
-          </Html>
-          <Html position={[2.2, 0, 0]} center transform rotation={[0, Math.PI / 2, 0]} occlude>
-            <div className="face-label">R</div>
-          </Html>
-          <Html position={[-2.2, 0, 0]} center transform rotation={[0, -Math.PI / 2, 0]} occlude>
-            <div className="face-label">L</div>
-          </Html>
-          <Html position={[0, 0, 2.2]} center transform rotation={[0, 0, 0]} occlude>
-            <div className="face-label">F</div>
-          </Html>
-          <Html position={[0, 0, -2.2]} center transform rotation={[0, Math.PI, 0]} occlude>
-            <div className="face-label">B</div>
-          </Html>
-        </group>
-      )}
+      <group>
+        <Html position={[0, 2.2, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} occlude>
+          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>U</div>
+        </Html>
+        <Html position={[0, -2.2, 0]} center transform rotation={[Math.PI / 2, 0, 0]} occlude>
+          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>D</div>
+        </Html>
+        <Html position={[2.2, 0, 0]} center transform rotation={[0, Math.PI / 2, 0]} occlude>
+          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>R</div>
+        </Html>
+        <Html position={[-2.2, 0, 0]} center transform rotation={[0, -Math.PI / 2, 0]} occlude>
+          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>L</div>
+        </Html>
+        <Html position={[0, 0, 2.2]} center transform rotation={[0, 0, 0]} occlude>
+          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>F</div>
+        </Html>
+        <Html position={[0, 0, -2.2]} center transform rotation={[0, Math.PI, 0]} occlude>
+          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>B</div>
+        </Html>
+      </group>
 
-      <OrbitControls enablePan={false} minDistance={4} maxDistance={12} />
+      <TrackballControls ref={controlsRef} makeDefault noPan={true} minDistance={4} maxDistance={12} rotateSpeed={4.0} />
+
+      <GizmoHelper
+        alignment="top-right"
+        margin={[80, 80]}
+      >
+        <GizmoViewcube />
+        <Html center style={{ pointerEvents: 'none' }}>
+          <ViewCubeArrows onRotate={handleRotateView} />
+        </Html>
+      </GizmoHelper>
     </>
   );
 };
