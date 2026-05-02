@@ -6,41 +6,81 @@ interface CubeStore {
   history: Move[];
   isAnimating: boolean;
   currentMove: Move | null;
+  moveQueue: Move[];
+  isResetting: boolean;
 
   // Actions
   addMove: (move: Move) => void;
   undo: () => void;
   finishAnimation: () => void;
+  shuffle: () => void;
+  reset: () => void;
 }
 
-export const useCubeStore = create<CubeStore>((set, get) => ({
+export const useCubeStore = create<CubeStore>((set) => ({
   cubies: getInitialCubies(),
   history: [],
   isAnimating: false,
   currentMove: null,
+  moveQueue: [],
+  isResetting: false,
 
   addMove: (move) => {
-    if (get().isAnimating) return;
-    set((state) => ({
-      isAnimating: true,
-      currentMove: move,
-      history: [...state.history, move],
-    }));
+    set((state) => {
+      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting) return state;
+      return {
+        isAnimating: true,
+        currentMove: move,
+        history: [...state.history, move],
+      };
+    });
   },
 
   undo: () => {
-    if (get().isAnimating) return;
-    const { history } = get();
-    if (history.length === 0) return;
+    set((state) => {
+      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting || state.history.length === 0) return state;
+      const lastMove = state.history[state.history.length - 1];
+      const inverseMove = getInverseMove(lastMove);
+      return {
+        isAnimating: true,
+        currentMove: inverseMove,
+        history: state.history.slice(0, -1),
+      };
+    });
+  },
 
-    const lastMove = history[history.length - 1];
-    const inverseMove = getInverseMove(lastMove);
+  shuffle: () => {
+    const moves: Move[] = ["U", "U'", "D", "D'", "R", "R'", "L", "L'", "F", "F'", "B", "B'"];
+    const randomMoves: Move[] = [];
+    for (let i = 0; i < 20; i++) {
+      randomMoves.push(moves[Math.floor(Math.random() * moves.length)]);
+    }
+    
+    set((state) => {
+      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting) return state;
+      const firstMove = randomMoves[0];
+      const remainingMoves = randomMoves.slice(1);
+      return {
+        isAnimating: true,
+        currentMove: firstMove,
+        moveQueue: remainingMoves,
+        history: [...state.history, firstMove],
+      };
+    });
+  },
 
-    set((state) => ({
-      isAnimating: true,
-      currentMove: inverseMove, // Anima o movimento reverso
-      history: state.history.slice(0, -1), // Remove do histórico
-    }));
+  reset: () => {
+    set((state) => {
+      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting || state.history.length === 0) return state;
+      const lastMove = state.history[state.history.length - 1];
+      const inverseMove = getInverseMove(lastMove);
+      return {
+        isAnimating: true,
+        currentMove: inverseMove,
+        history: state.history.slice(0, -1),
+        isResetting: true,
+      };
+    });
   },
 
   finishAnimation: () => {
@@ -48,10 +88,36 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
       if (!state.currentMove) return { isAnimating: false };
       
       const newCubies = applyRotationToCubies(state.cubies, state.currentMove);
+      
+      let nextMove = null;
+      let newQueue = state.moveQueue;
+      let newHistory = state.history;
+      let isResetting = state.isResetting;
+      let newIsAnimating = false;
+
+      if (isResetting) {
+        if (newHistory.length > 0) {
+          const lastMove = newHistory[newHistory.length - 1];
+          nextMove = getInverseMove(lastMove);
+          newHistory = newHistory.slice(0, -1);
+          newIsAnimating = true;
+        } else {
+          isResetting = false;
+        }
+      } else if (newQueue.length > 0) {
+        nextMove = newQueue[0];
+        newQueue = newQueue.slice(1);
+        newHistory = [...newHistory, nextMove];
+        newIsAnimating = true;
+      }
+
       return {
         cubies: newCubies,
-        isAnimating: false,
-        currentMove: null,
+        isAnimating: newIsAnimating,
+        currentMove: nextMove,
+        moveQueue: newQueue,
+        history: newHistory,
+        isResetting,
       };
     });
   },
