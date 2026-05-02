@@ -1,13 +1,13 @@
 import React, { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { useCubeStore } from "../../store/useCubeStore";
 import { Cubie } from "./Cubie";
 import { moveDetails } from "../../utils/cubeLogic";
 
 export const RubiksCube: React.FC = () => {
-  const { cubies, isAnimating, currentMove, finishAnimation } = useCubeStore();
+  const { cubies, isAnimating, currentMove, finishAnimation, showFaceLabels } = useCubeStore();
   const animatingGroupRef = useRef<THREE.Group>(null);
 
   // Controle de progresso da animação (de 0 a 1)
@@ -96,6 +96,29 @@ export const RubiksCube: React.FC = () => {
             })}
         </group>
       </group>
+
+      {showFaceLabels && (
+        <group>
+          <Html position={[0, 2.2, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} occlude>
+            <div className="face-label">U</div>
+          </Html>
+          <Html position={[0, -2.2, 0]} center transform rotation={[Math.PI / 2, 0, 0]} occlude>
+            <div className="face-label">D</div>
+          </Html>
+          <Html position={[2.2, 0, 0]} center transform rotation={[0, Math.PI / 2, 0]} occlude>
+            <div className="face-label">R</div>
+          </Html>
+          <Html position={[-2.2, 0, 0]} center transform rotation={[0, -Math.PI / 2, 0]} occlude>
+            <div className="face-label">L</div>
+          </Html>
+          <Html position={[0, 0, 2.2]} center transform rotation={[0, 0, 0]} occlude>
+            <div className="face-label">F</div>
+          </Html>
+          <Html position={[0, 0, -2.2]} center transform rotation={[0, Math.PI, 0]} occlude>
+            <div className="face-label">B</div>
+          </Html>
+        </group>
+      )}
 
       <OrbitControls enablePan={false} minDistance={4} maxDistance={12} />
     </>

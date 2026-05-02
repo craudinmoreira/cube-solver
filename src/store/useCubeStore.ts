@@ -8,6 +8,7 @@ interface CubeStore {
   currentMove: Move | null;
   moveQueue: Move[];
   isResetting: boolean;
+  showFaceLabels: boolean;
 
   // Actions
   addMove: (move: Move) => void;
@@ -15,6 +16,7 @@ interface CubeStore {
   finishAnimation: () => void;
   shuffle: () => void;
   reset: () => void;
+  toggleFaceLabels: () => void;
 }
 
 export const useCubeStore = create<CubeStore>((set) => ({
@@ -24,6 +26,11 @@ export const useCubeStore = create<CubeStore>((set) => ({
   currentMove: null,
   moveQueue: [],
   isResetting: false,
+  showFaceLabels: false,
+
+  toggleFaceLabels: () => {
+    set((state) => ({ showFaceLabels: !state.showFaceLabels }));
+  },
 
   addMove: (move) => {
     set((state) => {
