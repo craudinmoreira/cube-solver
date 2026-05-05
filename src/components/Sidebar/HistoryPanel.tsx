@@ -1,23 +1,39 @@
-import React from 'react';
-import { useCubeStore } from '../../store/useCubeStore';
-import { Undo2 } from 'lucide-react';
+import React from "react";
+import { useCubeStore } from "../../store/useCubeStore";
+import { Undo2, Trash2 } from "lucide-react";
 
 export const HistoryPanel: React.FC = () => {
-  const { history, undo, isAnimating } = useCubeStore();
+  const { history, undo, isAnimating, clearCubeColors } = useCubeStore();
 
   return (
     <aside className="history-panel">
       <div className="history-header">
-        <h2>Histórico</h2>
-        <button 
-          onClick={undo} 
-          disabled={history.length === 0 || isAnimating}
-          className="undo-button"
-          title="Desfazer"
-        >
-          <Undo2 size={20} />
-          Desfazer
-        </button>
+        <h2>
+          Histórico
+          {history.length > 0 && (
+            <span className="history-count">{history.length}</span>
+          )}
+        </h2>
+        <div className="history-actions">
+          <button
+            onClick={clearCubeColors}
+            disabled={history.length === 0 || isAnimating}
+            className="clear-history-button"
+            title="Limpar histórico e resetar cubo"
+          >
+            <Trash2 size={16} />
+            Limpar
+          </button>
+          <button
+            onClick={undo}
+            disabled={history.length === 0 || isAnimating}
+            className="undo-button"
+            title="Desfazer"
+          >
+            <Undo2 size={16} />
+            Desfazer
+          </button>
+        </div>
       </div>
 
       <div className="history-list">
