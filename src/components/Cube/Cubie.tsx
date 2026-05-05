@@ -21,13 +21,16 @@ const COLORS = {
   core: "#1C1C1E", // plástico escuro
 };
 
-// Planos internos tapam os gaps sem interferir na animação.
-// Ficam recuados em 0.47 (dentro do gap de 0.03 entre cubies).
-const FILL_OFFSET = 0.47;
-const FILL_SIZE: [number, number] = [0.94, 0.94];
+const CUBIE_SIZE = 1;
+const HALF_CUBIE_SIZE = CUBIE_SIZE / 2;
 
-const STICKER_OFFSET = 0.482;
-const STICKER_SIZE: [number, number] = [0.73, 0.73];
+// Corpo e faces internas encostam entre si para remover fresta visual.
+const FILL_OFFSET = HALF_CUBIE_SIZE;
+const FILL_SIZE: [number, number] = [CUBIE_SIZE, CUBIE_SIZE];
+
+// Sticker quase cobre face inteira; pequeno recuo evita z-fighting.
+const STICKER_OFFSET = HALF_CUBIE_SIZE + 0.001;
+const STICKER_SIZE: [number, number] = [0.75, 0.75];
 const STICKER_PROPS = {
   roughness: 0.12,
   metalness: 0.0,
@@ -51,21 +54,20 @@ export const Cubie: React.FC<CubieProps> = ({ cubieState }) => {
         : 0;
   const initZ = cubieState.id % 3 === 2 ? 1 : cubieState.id % 3 === 0 ? -1 : 0;
 
+  const [qx, qy, qz, qw] = cubieState.quaternion;
   const quaternion = React.useMemo(
-    () => new THREE.Quaternion(...cubieState.quaternion),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      cubieState.quaternion[0],
-      cubieState.quaternion[1],
-      cubieState.quaternion[2],
-      cubieState.quaternion[3],
-    ],
+    () => new THREE.Quaternion(qx, qy, qz, qw),
+    [qx, qy, qz, qw],
   );
 
   return (
     <group position={cubieState.position} quaternion={quaternion}>
       {/* Corpo arredondado (plástico escuro) */}
-      <RoundedBox args={[0.94, 0.94, 0.94]} radius={0.09} smoothness={4}>
+      <RoundedBox
+        args={[CUBIE_SIZE, CUBIE_SIZE, CUBIE_SIZE]}
+        radius={0.06}
+        smoothness={4}
+      >
         <meshStandardMaterial
           color={COLORS.core}
           roughness={0.45}
