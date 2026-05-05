@@ -1,6 +1,11 @@
 import React, { useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { TrackballControls, Html, GizmoHelper, GizmoViewcube } from "@react-three/drei";
+import {
+  TrackballControls,
+  Html,
+  GizmoHelper,
+  GizmoViewcube,
+} from "@react-three/drei";
 import * as THREE from "three";
 import { useCubeStore } from "../../store/useCubeStore";
 import { Cubie } from "./Cubie";
@@ -9,43 +14,50 @@ import { TrackballControls as TrackballControlsImpl } from "three-stdlib";
 import { moveDetails } from "../../utils/cubeLogic";
 
 export const RubiksCube: React.FC = () => {
-  const { cubies, isAnimating, currentMove, finishAnimation, showFaceLabels } = useCubeStore();
+  const { cubies, isAnimating, currentMove, finishAnimation, showFaceLabels } =
+    useCubeStore();
   const animatingGroupRef = useRef<THREE.Group>(null);
   const controlsRef = useRef<TrackballControlsImpl>(null);
   const { camera, invalidate } = useThree();
 
-  const handleRotateView = (axis: 'x' | 'y' | 'z', direction: 1 | -1) => {
+  const handleRotateView = (axis: "x" | "y" | "z", direction: 1 | -1) => {
     if (!controlsRef.current) return;
     const controls = controlsRef.current;
     const target = controls.target;
-    
-    const angle = (15 * Math.PI) / 180 * direction; // 15 degrees
-    
+
+    const angle = ((15 * Math.PI) / 180) * direction; // 15 degrees
+
     // Calculate view direction
-    const viewDir = new THREE.Vector3().subVectors(target, camera.position).normalize();
-    
+    const viewDir = new THREE.Vector3()
+      .subVectors(target, camera.position)
+      .normalize();
+
     // Calculate local axes
-    const rightDir = new THREE.Vector3().crossVectors(viewDir, camera.up).normalize();
-    const upDir = new THREE.Vector3().crossVectors(rightDir, viewDir).normalize();
-    
+    const rightDir = new THREE.Vector3()
+      .crossVectors(viewDir, camera.up)
+      .normalize();
+    const upDir = new THREE.Vector3()
+      .crossVectors(rightDir, viewDir)
+      .normalize();
+
     const quaternion = new THREE.Quaternion();
-    
-    if (axis === 'x') {
+
+    if (axis === "x") {
       quaternion.setFromAxisAngle(rightDir, angle);
-    } else if (axis === 'y') {
+    } else if (axis === "y") {
       quaternion.setFromAxisAngle(upDir, angle);
-    } else if (axis === 'z') {
+    } else if (axis === "z") {
       quaternion.setFromAxisAngle(viewDir, angle);
     }
-    
+
     // Apply rotation to position relative to target
     const offset = new THREE.Vector3().subVectors(camera.position, target);
     offset.applyQuaternion(quaternion);
     camera.position.copy(target).add(offset);
-    
+
     // Apply rotation to up vector
     camera.up.applyQuaternion(quaternion);
-    
+
     controls.update();
     invalidate();
   };
@@ -93,9 +105,9 @@ export const RubiksCube: React.FC = () => {
         {cubies.map((cubie) => {
           let isPart = false;
           if (isAnimating && currentMove) {
-            const { axis, layer } = moveDetails[currentMove];
+            const { axis, layers } = moveDetails[currentMove];
             const posIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
-            isPart = Math.round(cubie.position[posIndex]) === layer;
+            isPart = layers.includes(Math.round(cubie.position[posIndex]));
           }
 
           // Se a peça faz parte da camada que está girando, não a renderizamos solta,
@@ -118,9 +130,11 @@ export const RubiksCube: React.FC = () => {
           {isAnimating &&
             currentMove &&
             cubies.map((cubie) => {
-              const { axis, layer } = moveDetails[currentMove];
+              const { axis, layers } = moveDetails[currentMove];
               const posIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
-              const isPart = Math.round(cubie.position[posIndex]) === layer;
+              const isPart = layers.includes(
+                Math.round(cubie.position[posIndex]),
+              );
 
               if (!isPart) return null;
 
@@ -138,34 +152,98 @@ export const RubiksCube: React.FC = () => {
       </group>
 
       <group>
-        <Html position={[0, 2.2, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} occlude>
-          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>U</div>
+        <Html
+          position={[0, 2.2, 0]}
+          center
+          transform
+          rotation={[-Math.PI / 2, 0, 0]}
+          occlude
+        >
+          <div
+            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
+          >
+            U
+          </div>
         </Html>
-        <Html position={[0, -2.2, 0]} center transform rotation={[Math.PI / 2, 0, 0]} occlude>
-          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>D</div>
+        <Html
+          position={[0, -2.2, 0]}
+          center
+          transform
+          rotation={[Math.PI / 2, 0, 0]}
+          occlude
+        >
+          <div
+            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
+          >
+            D
+          </div>
         </Html>
-        <Html position={[2.2, 0, 0]} center transform rotation={[0, Math.PI / 2, 0]} occlude>
-          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>R</div>
+        <Html
+          position={[2.2, 0, 0]}
+          center
+          transform
+          rotation={[0, Math.PI / 2, 0]}
+          occlude
+        >
+          <div
+            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
+          >
+            R
+          </div>
         </Html>
-        <Html position={[-2.2, 0, 0]} center transform rotation={[0, -Math.PI / 2, 0]} occlude>
-          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>L</div>
+        <Html
+          position={[-2.2, 0, 0]}
+          center
+          transform
+          rotation={[0, -Math.PI / 2, 0]}
+          occlude
+        >
+          <div
+            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
+          >
+            L
+          </div>
         </Html>
-        <Html position={[0, 0, 2.2]} center transform rotation={[0, 0, 0]} occlude>
-          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>F</div>
+        <Html
+          position={[0, 0, 2.2]}
+          center
+          transform
+          rotation={[0, 0, 0]}
+          occlude
+        >
+          <div
+            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
+          >
+            F
+          </div>
         </Html>
-        <Html position={[0, 0, -2.2]} center transform rotation={[0, Math.PI, 0]} occlude>
-          <div className={`face-label ${showFaceLabels ? 'visible' : 'hidden'}`}>B</div>
+        <Html
+          position={[0, 0, -2.2]}
+          center
+          transform
+          rotation={[0, Math.PI, 0]}
+          occlude
+        >
+          <div
+            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
+          >
+            B
+          </div>
         </Html>
       </group>
 
-      <TrackballControls ref={controlsRef} makeDefault noPan={true} minDistance={4} maxDistance={12} rotateSpeed={4.0} />
+      <TrackballControls
+        ref={controlsRef}
+        makeDefault
+        noPan={true}
+        minDistance={4}
+        maxDistance={12}
+        rotateSpeed={4.0}
+      />
 
-      <GizmoHelper
-        alignment="top-right"
-        margin={[80, 80]}
-      >
+      <GizmoHelper alignment="top-right" margin={[80, 80]}>
         <GizmoViewcube />
-        <Html center style={{ pointerEvents: 'none' }}>
+        <Html center style={{ pointerEvents: "none" }}>
           <ViewCubeArrows onRotate={handleRotateView} />
         </Html>
       </GizmoHelper>
