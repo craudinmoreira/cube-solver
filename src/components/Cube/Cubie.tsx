@@ -77,7 +77,10 @@ export const Cubie: React.FC<CubieProps> = ({ cubieState }) => {
       {initX === 1 && (
         <mesh position={[STICKER_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
           <planeGeometry args={STICKER_SIZE} />
-          <meshPhysicalMaterial color={COLORS.right} {...STICKER_PROPS} />
+          <meshPhysicalMaterial
+            color={cubieState.faceColors?.right ?? COLORS.right}
+            {...STICKER_PROPS}
+          />
         </mesh>
       )}
       {initX === -1 && (
@@ -86,31 +89,46 @@ export const Cubie: React.FC<CubieProps> = ({ cubieState }) => {
           rotation={[0, -Math.PI / 2, 0]}
         >
           <planeGeometry args={STICKER_SIZE} />
-          <meshPhysicalMaterial color={COLORS.left} {...STICKER_PROPS} />
+          <meshPhysicalMaterial
+            color={cubieState.faceColors?.left ?? COLORS.left}
+            {...STICKER_PROPS}
+          />
         </mesh>
       )}
       {initY === 1 && (
         <mesh position={[0, STICKER_OFFSET, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={STICKER_SIZE} />
-          <meshPhysicalMaterial color={COLORS.top} {...STICKER_PROPS} />
+          <meshPhysicalMaterial
+            color={cubieState.faceColors?.top ?? COLORS.top}
+            {...STICKER_PROPS}
+          />
         </mesh>
       )}
       {initY === -1 && (
         <mesh position={[0, -STICKER_OFFSET, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <planeGeometry args={STICKER_SIZE} />
-          <meshPhysicalMaterial color={COLORS.bottom} {...STICKER_PROPS} />
+          <meshPhysicalMaterial
+            color={cubieState.faceColors?.bottom ?? COLORS.bottom}
+            {...STICKER_PROPS}
+          />
         </mesh>
       )}
       {initZ === 1 && (
         <mesh position={[0, 0, STICKER_OFFSET]}>
           <planeGeometry args={STICKER_SIZE} />
-          <meshPhysicalMaterial color={COLORS.front} {...STICKER_PROPS} />
+          <meshPhysicalMaterial
+            color={cubieState.faceColors?.front ?? COLORS.front}
+            {...STICKER_PROPS}
+          />
         </mesh>
       )}
       {initZ === -1 && (
         <mesh position={[0, 0, -STICKER_OFFSET]} rotation={[0, Math.PI, 0]}>
           <planeGeometry args={STICKER_SIZE} />
-          <meshPhysicalMaterial color={COLORS.back} {...STICKER_PROPS} />
+          <meshPhysicalMaterial
+            color={cubieState.faceColors?.back ?? COLORS.back}
+            {...STICKER_PROPS}
+          />
         </mesh>
       )}
 

@@ -1,5 +1,12 @@
-import { create } from 'zustand';
-import { getInitialCubies, type CubieState, type Move, applyRotationToCubies, getInverseMove } from '../utils/cubeLogic';
+import { create } from "zustand";
+import {
+  getInitialCubies,
+  type CubieState,
+  type Move,
+  applyRotationToCubies,
+  getInverseMove,
+  parseCubeStateString,
+} from "../utils/cubeLogic";
 
 interface CubeStore {
   cubies: CubieState[];
@@ -17,6 +24,8 @@ interface CubeStore {
   shuffle: () => void;
   reset: () => void;
   toggleFaceLabels: () => void;
+  applyCubeState: (stateString: string) => void;
+  clearCubeColors: () => void;
 }
 
 export const useCubeStore = create<CubeStore>((set) => ({
@@ -34,7 +43,8 @@ export const useCubeStore = create<CubeStore>((set) => ({
 
   addMove: (move) => {
     set((state) => {
-      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting) return state;
+      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting)
+        return state;
       return {
         isAnimating: true,
         currentMove: move,
@@ -45,7 +55,13 @@ export const useCubeStore = create<CubeStore>((set) => ({
 
   undo: () => {
     set((state) => {
-      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting || state.history.length === 0) return state;
+      if (
+        state.isAnimating ||
+        state.moveQueue.length > 0 ||
+        state.isResetting ||
+        state.history.length === 0
+      )
+        return state;
       const lastMove = state.history[state.history.length - 1];
       const inverseMove = getInverseMove(lastMove);
       return {
@@ -57,14 +73,28 @@ export const useCubeStore = create<CubeStore>((set) => ({
   },
 
   shuffle: () => {
-    const moves: Move[] = ["U", "U'", "D", "D'", "R", "R'", "L", "L'", "F", "F'", "B", "B'"];
+    const moves: Move[] = [
+      "U",
+      "U'",
+      "D",
+      "D'",
+      "R",
+      "R'",
+      "L",
+      "L'",
+      "F",
+      "F'",
+      "B",
+      "B'",
+    ];
     const randomMoves: Move[] = [];
     for (let i = 0; i < 20; i++) {
       randomMoves.push(moves[Math.floor(Math.random() * moves.length)]);
     }
-    
+
     set((state) => {
-      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting) return state;
+      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting)
+        return state;
       const firstMove = randomMoves[0];
       const remainingMoves = randomMoves.slice(1);
       return {
@@ -78,7 +108,13 @@ export const useCubeStore = create<CubeStore>((set) => ({
 
   reset: () => {
     set((state) => {
-      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting || state.history.length === 0) return state;
+      if (
+        state.isAnimating ||
+        state.moveQueue.length > 0 ||
+        state.isResetting ||
+        state.history.length === 0
+      )
+        return state;
       const lastMove = state.history[state.history.length - 1];
       const inverseMove = getInverseMove(lastMove);
       return {
@@ -93,9 +129,9 @@ export const useCubeStore = create<CubeStore>((set) => ({
   finishAnimation: () => {
     set((state) => {
       if (!state.currentMove) return { isAnimating: false };
-      
+
       const newCubies = applyRotationToCubies(state.cubies, state.currentMove);
-      
+
       let nextMove = null;
       let newQueue = state.moveQueue;
       let newHistory = state.history;
@@ -126,6 +162,30 @@ export const useCubeStore = create<CubeStore>((set) => ({
         history: newHistory,
         isResetting,
       };
+    });
+  },
+
+  applyCubeState: (stateString) => {
+    const cubies = parseCubeStateString(stateString);
+    if (!cubies) return;
+    set({
+      cubies,
+      history: [],
+      isAnimating: false,
+      currentMove: null,
+      moveQueue: [],
+      isResetting: false,
+    });
+  },
+
+  clearCubeColors: () => {
+    set({
+      cubies: getInitialCubies(),
+      history: [],
+      isAnimating: false,
+      currentMove: null,
+      moveQueue: [],
+      isResetting: false,
     });
   },
 }));
