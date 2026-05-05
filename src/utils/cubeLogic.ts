@@ -301,3 +301,43 @@ export const applyRotationToCubies = (
     };
   });
 };
+
+// Conjunto de todos os movimentos válidos para uso no parser
+const VALID_MOVES = new Set<string>(Object.keys(moveDetails));
+
+/**
+ * Converte uma string de solução no formato "R U Ri F2 Xi" em Move[].
+ * - Letras minúsculas 'i' substituem o apóstrofo (ex: "Ri" → "R'").
+ * - Tokens são separados por espaço/vírgula.
+ * Retorna { moves, error } onde error é null se tudo for válido.
+ */
+export const parseSolutionString = (
+  input: string,
+): { moves: Move[]; error: string | null } => {
+  if (!input.trim()) return { moves: [], error: null };
+
+  // Normaliza 'i' como inverso apenas quando é sufixo de movimento (ex: Ri, Ui, Xi)
+  // Tokeniza por espaço/vírgula/ponto-e-vírgula
+  const tokens = input
+    .trim()
+    .split(/[\s,;]+/)
+    .filter(Boolean);
+
+  const moves: Move[] = [];
+
+  for (const raw of tokens) {
+    // Substitui trailing 'i' (case-sensitive: "Ri" → "R'", mas "ri" → "r'")
+    // Também aceita "2" como sufixo de meio giro (ex: "R2")
+    const token = raw.replace(/i$/, "'");
+
+    if (!VALID_MOVES.has(token)) {
+      return {
+        moves: [],
+        error: `Movimento inválido: "${raw}". Token não reconhecido. Use letras como R, U', F2, M, X, etc.`,
+      };
+    }
+    moves.push(token as Move);
+  }
+
+  return { moves, error: null };
+};

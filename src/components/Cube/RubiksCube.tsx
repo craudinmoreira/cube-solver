@@ -8,6 +8,7 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import { useCubeStore } from "../../store/useCubeStore";
+import { useAnimationSpeed } from "../../store/useAnimationSpeed";
 import { Cubie } from "./Cubie";
 import { ViewCubeArrows } from "./ViewCubeArrows";
 import { TrackballControls as TrackballControlsImpl } from "three-stdlib";
@@ -16,6 +17,7 @@ import { moveDetails } from "../../utils/cubeLogic";
 export const RubiksCube: React.FC = () => {
   const { cubies, isAnimating, currentMove, finishAnimation, showFaceLabels } =
     useCubeStore();
+  const { speed } = useAnimationSpeed();
   const animatingGroupRef = useRef<THREE.Group>(null);
   const controlsRef = useRef<TrackballControlsImpl>(null);
   const { camera, invalidate } = useThree();
@@ -67,7 +69,6 @@ export const RubiksCube: React.FC = () => {
 
   useFrame((_, delta) => {
     if (isAnimating && currentMove && animatingGroupRef.current) {
-      const speed = 4.0; // Velocidade da animação (ajustável)
       const nextProgress = Math.min(animProgress + delta * speed, 1);
 
       const { axis, angle } = moveDetails[currentMove];

@@ -3,6 +3,7 @@ import { Sun, Moon } from "lucide-react";
 import { HistoryPanel } from "../Sidebar/HistoryPanel";
 import { Controls } from "../Cube/Controls";
 import { CubeStateInput } from "../Sidebar/CubeStateInput";
+import { SolutionInput } from "../Sidebar/SolutionInput";
 import { useThemeStore } from "../../store/useThemeStore";
 import { FloatingControls } from "../Cube/FloatingControls";
 
@@ -35,6 +36,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
       <main className="main-content">
         <aside className="left-sidebar">
           <CubeStateInput />
+          <SolutionInput />
         </aside>
 
         <section className="cube-container">

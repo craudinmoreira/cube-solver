@@ -485,3 +485,77 @@ body {
 .state-clear-button:hover {
   background-color: var(--toggle-hover);
 }
+
+/* ── Painel de Solução ────────────────────────────────────────────────── */
+
+.solution-input-panel {
+  border-top: 1px solid var(--border-color);
+}
+
+/* Preview de tokens */
+.solution-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.5rem;
+  max-height: 110px;
+  overflow-y: auto;
+}
+
+.solution-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background-color: var(--border-color);
+  color: var(--accent-color);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: 'Courier New', Courier, monospace;
+  white-space: nowrap;
+}
+
+.solution-execute-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+/* ── Controle de velocidade (FloatingControls) ─────────────────────── */
+
+.floating-speed {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 2rem;
+  padding: 0 0.75rem;
+  height: 3rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.speed-icon {
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.speed-slider {
+  width: 80px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+.speed-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  min-width: 28px;
+  text-align: right;
+  opacity: 0.85;
+}
+

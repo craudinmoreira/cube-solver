@@ -26,6 +26,7 @@ interface CubeStore {
   toggleFaceLabels: () => void;
   applyCubeState: (stateString: string) => void;
   clearCubeColors: () => void;
+  executeSequence: (moves: Move[]) => void;
 }
 
 export const useCubeStore = create<CubeStore>((set) => ({
@@ -186,6 +187,21 @@ export const useCubeStore = create<CubeStore>((set) => ({
       currentMove: null,
       moveQueue: [],
       isResetting: false,
+    });
+  },
+
+  executeSequence: (moves) => {
+    if (moves.length === 0) return;
+    set((state) => {
+      if (state.isAnimating || state.moveQueue.length > 0 || state.isResetting)
+        return state;
+      const [first, ...rest] = moves;
+      return {
+        isAnimating: true,
+        currentMove: first,
+        moveQueue: rest,
+        history: [...state.history, first],
+      };
     });
   },
 }));
