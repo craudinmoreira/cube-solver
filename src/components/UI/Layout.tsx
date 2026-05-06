@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Sun, Moon } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Sun, Moon, Menu, History } from "lucide-react";
 import { HistoryPanel } from "../Sidebar/HistoryPanel";
 import { Controls } from "../Cube/Controls";
 import { CubeStateInput } from "../Sidebar/CubeStateInput";
@@ -11,6 +11,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { theme, toggleTheme } = useThemeStore();
+  const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -19,22 +21,52 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
   return (
     <div className="layout">
       <header className="header">
-        <h1>Virtual Cube Solver</h1>
-        <button
-          className="theme-toggle"
-          onClick={toggleTheme}
-          title={
-            theme === "dark"
-              ? "Mudar para tema claro"
-              : "Mudar para tema escuro"
-          }
+        <button 
+          className="header-icon-btn desktop-hide" 
+          onClick={() => setIsLeftMenuOpen(prev => !prev)}
+          title="Menu"
         >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          <Menu size={24} />
         </button>
+
+        <h1>Virtual Cube Solver</h1>
+        
+        <div className="header-actions">
+          <button 
+            className="header-icon-btn desktop-hide" 
+            onClick={() => setIsHistoryOpen(prev => !prev)}
+            title="Histórico"
+          >
+            <History size={22} />
+          </button>
+
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            title={
+              theme === "dark"
+                ? "Mudar para tema claro"
+                : "Mudar para tema escuro"
+            }
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
       </header>
 
       <main className="main-content">
-        <aside className="left-sidebar">
+        {/* Backdrop for overlays */}
+        {(isLeftMenuOpen || isHistoryOpen) && (
+          <div 
+            className="overlay-backdrop" 
+            onClick={() => {
+              setIsLeftMenuOpen(false);
+              setIsHistoryOpen(false);
+            }}
+          />
+        )}
+
+        <aside className={`drawer left-drawer ${isLeftMenuOpen ? 'open' : ''}`}>
           <CubeStateInput />
           <SolutionInput />
         </aside>
@@ -44,11 +76,17 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
           <FloatingControls />
         </section>
 
-        <aside className="sidebar">
-          <Controls />
+        <aside className={`drawer right-drawer ${isHistoryOpen ? 'open' : ''}`}>
+          <div className="desktop-controls-wrapper">
+            <Controls />
+          </div>
           <HistoryPanel />
         </aside>
       </main>
+
+      <footer className="bottom-controls">
+        <Controls />
+      </footer>
     </div>
   );
 };

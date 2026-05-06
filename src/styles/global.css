@@ -48,23 +48,53 @@ body {
 }
 
 .header {
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   background-color: var(--panel-bg);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   position: relative;
+  z-index: 60;
 }
 
 .header h1 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  .header h1 {
+    font-size: 1rem;
+  }
+}
+
+.header-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.header-icon-btn:hover {
+  background-color: var(--toggle-bg);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .theme-toggle {
-  position: absolute;
-  right: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,6 +117,7 @@ body {
   display: flex;
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 
 .cube-container {
@@ -95,69 +126,180 @@ body {
   background-color: var(--bg-color);
   /* Garante que o Canvas do Three.js ocupe todo o espaço */
   min-width: 0;
+  height: 100%;
+  z-index: 1;
 }
 
-.sidebar {
-  width: 416px;
+/* ── Drawers (Menus laterais off-canvas) ──────────────────────────────── */
+.overlay-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 40;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 85vw;
   background-color: var(--panel-bg);
-  border-left: 1px solid var(--border-color);
+  z-index: 50;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
 }
 
-/* Sidebar esquerda — estado do cubo */
-.left-sidebar {
-  width: 364px;
-  background-color: var(--panel-bg);
+.left-drawer {
+  left: 0;
+  transform: translateX(-100%);
   border-right: 1px solid var(--border-color);
+}
+
+.left-drawer.open {
+  transform: translateX(0);
+}
+
+.right-drawer {
+  right: 0;
+  transform: translateX(100%);
+  border-left: 1px solid var(--border-color);
+}
+
+.right-drawer.open {
+  transform: translateX(0);
+}
+
+/* ── Desktop Layout Overrides ─────────────────────────────────────────── */
+.desktop-controls-wrapper {
+  display: none;
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  .desktop-hide {
+    display: none !important;
+  }
+  
+  .overlay-backdrop {
+    display: none !important;
+  }
+  
+  .drawer {
+    position: static;
+    transform: translateX(0) !important;
+    height: 100%;
+    box-shadow: none;
+    z-index: 2;
+  }
+
+  .left-drawer {
+    width: 320px;
+    max-width: none;
+    border-right: 1px solid var(--border-color);
+  }
+
+  .right-drawer {
+    width: 380px;
+    max-width: none;
+    border-left: 1px solid var(--border-color);
+  }
+
+  .bottom-controls {
+    display: none !important;
+  }
+
+  .desktop-controls-wrapper {
+    display: block;
+    padding-top: 1rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .desktop-controls-wrapper .bottom-controls-panel {
+    align-items: stretch;
+    padding: 0 1.5rem;
+  }
+  .desktop-controls-wrapper .basic-controls {
+    max-width: none;
+  }
+  .desktop-controls-wrapper .extended-controls {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: none;
+  }
+  .desktop-controls-wrapper .extended-group {
+    align-items: flex-start;
+  }
+  .desktop-controls-wrapper .controls-row {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+/* ── Painel de Controles Inferior ─────────────────────────────────────── */
+.bottom-controls {
+  background-color: var(--panel-bg);
+  border-top: 1px solid var(--border-color);
+  padding: 0.5rem;
+  z-index: 5;
+}
+
+.bottom-controls-panel {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* Painel de Controles */
-.controls-panel {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+.basic-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 600px;
 }
 
-.controls-panel h3 {
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
-  text-align: center;
+.controls-row {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
 }
 
-.controls-section {
-  margin-bottom: 0.75rem;
-}
-
-.controls-section-label {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--accent-color);
-  margin-bottom: 0.35rem;
-  opacity: 0.85;
-}
-
-.controls-grid {
-  display: grid;
+.controls-row.small {
   gap: 0.3rem;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .control-button {
+  flex: 1;
   background-color: var(--border-color);
   color: var(--text-color);
   border: none;
-  padding: 0.55rem 0;
+  padding: 0.6rem 0;
   border-radius: 4px;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.2s;
+  max-width: 50px;
+}
+
+.control-button.small-btn {
+  flex: 1 1 calc(33.33% - 0.4rem); /* Fills 1/3 of the container minus gap */
+  max-width: none;
+  min-width: 45px;
 }
 
 .control-button:hover:not(:disabled) {
@@ -168,6 +310,48 @@ body {
   background-color: var(--disabled-color);
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+.expand-controls-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  padding: 0.2rem;
+  margin-top: -0.2rem;
+}
+
+.expand-controls-btn:hover {
+  opacity: 1;
+}
+
+.extended-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem 0.5rem;
+  width: 100%;
+  max-width: 800px;
+  padding-bottom: 0.5rem;
+}
+
+.extended-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.controls-section-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 0.35rem;
+  opacity: 0.85;
 }
 
 /* Painel de Histórico */
@@ -183,10 +367,12 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .history-header h2 {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   margin: 0;
   display: flex;
   align-items: center;
@@ -211,22 +397,24 @@ body {
 .history-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+}
+
+.clear-history-button, .undo-button, .redo-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s, background-color 0.2s;
+  padding: 0.5rem;
 }
 
 .clear-history-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   background-color: transparent;
   color: var(--text-color);
   border: 1px solid var(--border-color);
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
   opacity: 0.75;
-  transition: opacity 0.2s, background-color 0.2s;
 }
 
 .clear-history-button:hover:not(:disabled) {
@@ -234,31 +422,26 @@ body {
   background-color: var(--toggle-hover);
 }
 
-.clear-history-button:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
 .undo-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   background-color: var(--danger-color);
   color: white;
   border: 1px solid transparent;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: opacity 0.2s;
 }
 
-.undo-button:hover:not(:disabled) {
+.redo-button {
+  background-color: var(--accent-color);
+  color: white;
+  border: 1px solid transparent;
+}
+
+.undo-button:hover:not(:disabled), .redo-button:hover:not(:disabled) {
   opacity: 0.8;
 }
 
-.undo-button:disabled {
+.clear-history-button:disabled, .undo-button:disabled, .redo-button:disabled {
+  opacity: 0.35;
   background-color: var(--disabled-color);
+  border-color: transparent;
   cursor: not-allowed;
 }
 
@@ -301,19 +484,30 @@ body {
 /* Floating Controls */
 .floating-controls {
   position: absolute;
+  /* Centered horizontally, placed above bottom controls on mobile */
   bottom: 1.5rem;
-  left: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   gap: 1rem;
-  z-index: 10;
+  z-index: 5;
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  .floating-controls {
+    /* Reset to bottom-left for desktop */
+    bottom: 1.5rem;
+    left: 1.5rem;
+    transform: none;
+  }
 }
 
 .floating-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
+  width: 2.5rem;
+  height: 2.5rem;
   background-color: var(--panel-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
@@ -339,16 +533,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   font-weight: bold;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   background-color: var(--panel-bg);
   color: var(--text-color);
   border: 2px solid var(--border-color);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  pointer-events: none; /* Permite girar o cubo através da legenda */
+  pointer-events: none;
   user-select: none;
   transition: opacity 0.3s ease-out, transform 0.3s ease-out;
   opacity: 0;
@@ -365,7 +559,7 @@ body {
   transform: scale(0.5);
 }
 
-/* ── Painel de Estado do Cubo (sidebar esquerda) ──────────────────────── */
+/* ── Painel de Estado do Cubo ──────────────────────── */
 
 .state-input-panel {
   padding: 1.25rem;
@@ -388,7 +582,6 @@ body {
   text-align: center;
 }
 
-/* Legenda de cores */
 .color-legend {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -413,7 +606,6 @@ body {
   opacity: 0.85;
 }
 
-/* Textarea do input */
 .state-input-textarea {
   width: 100%;
   background-color: var(--bg-color);
@@ -441,7 +633,6 @@ body {
   border-color: #6ee7b7;
 }
 
-/* Contador de caracteres */
 .state-input-counter {
   font-size: 0.72rem;
   text-align: right;
@@ -456,7 +647,6 @@ body {
   opacity: 0.55;
 }
 
-/* Mensagem de erro */
 .state-input-error-msg {
   font-size: 0.72rem;
   color: var(--danger-color);
@@ -467,7 +657,6 @@ body {
   padding: 0.4rem 0.6rem;
 }
 
-/* Preview colorido das letras */
 .cube-state-preview {
   display: flex;
   flex-wrap: wrap;
@@ -490,7 +679,6 @@ body {
   font-family: 'Courier New', Courier, monospace;
 }
 
-/* Botões do painel */
 .state-input-buttons {
   display: flex;
   gap: 0.5rem;
@@ -541,7 +729,6 @@ body {
   border-top: 1px solid var(--border-color);
 }
 
-/* Preview de tokens */
 .solution-preview {
   display: flex;
   flex-wrap: wrap;
@@ -585,7 +772,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 2rem;
   padding: 0 0.75rem;
-  height: 3rem;
+  height: 2.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
@@ -595,7 +782,7 @@ body {
 }
 
 .speed-slider {
-  width: 80px;
+  width: 60px;
   accent-color: var(--accent-color);
   cursor: pointer;
 }
@@ -607,4 +794,3 @@ body {
   text-align: right;
   opacity: 0.85;
 }
-

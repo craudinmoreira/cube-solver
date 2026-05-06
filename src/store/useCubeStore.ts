@@ -11,6 +11,7 @@ import {
 interface CubeStore {
   cubies: CubieState[];
   history: Move[];
+  redoHistory: Move[];
   isAnimating: boolean;
   currentMove: Move | null;
   moveQueue: Move[];
@@ -20,6 +21,7 @@ interface CubeStore {
   // Actions
   addMove: (move: Move) => void;
   undo: () => void;
+  redo: () => void;
   finishAnimation: () => void;
   shuffle: () => void;
   reset: () => void;
@@ -32,6 +34,7 @@ interface CubeStore {
 export const useCubeStore = create<CubeStore>((set) => ({
   cubies: getInitialCubies(),
   history: [],
+  redoHistory: [],
   isAnimating: false,
   currentMove: null,
   moveQueue: [],
@@ -50,6 +53,7 @@ export const useCubeStore = create<CubeStore>((set) => ({
         isAnimating: true,
         currentMove: move,
         history: [...state.history, move],
+        redoHistory: [], // Clear redo history on new manual move
       };
     });
   },
@@ -69,6 +73,27 @@ export const useCubeStore = create<CubeStore>((set) => ({
         isAnimating: true,
         currentMove: inverseMove,
         history: state.history.slice(0, -1),
+        redoHistory: [...state.redoHistory, lastMove],
+      };
+    });
+  },
+
+  redo: () => {
+    set((state) => {
+      if (
+        state.isAnimating ||
+        state.moveQueue.length > 0 ||
+        state.isResetting ||
+        state.redoHistory.length === 0
+      )
+        return state;
+      
+      const nextMove = state.redoHistory[state.redoHistory.length - 1];
+      return {
+        isAnimating: true,
+        currentMove: nextMove,
+        history: [...state.history, nextMove],
+        redoHistory: state.redoHistory.slice(0, -1),
       };
     });
   },
@@ -103,6 +128,7 @@ export const useCubeStore = create<CubeStore>((set) => ({
         currentMove: firstMove,
         moveQueue: remainingMoves,
         history: [...state.history, firstMove],
+        redoHistory: [],
       };
     });
   },
@@ -122,6 +148,8 @@ export const useCubeStore = create<CubeStore>((set) => ({
         isAnimating: true,
         currentMove: inverseMove,
         history: state.history.slice(0, -1),
+        redoHistory: [], // Usually reset clears redo, but technically reset is an animated undo. 
+        // If we want to undo the reset, we'd need a different mechanism. For now, clear it.
         isResetting: true,
       };
     });
@@ -172,6 +200,7 @@ export const useCubeStore = create<CubeStore>((set) => ({
     set({
       cubies,
       history: [],
+      redoHistory: [],
       isAnimating: false,
       currentMove: null,
       moveQueue: [],
@@ -183,6 +212,7 @@ export const useCubeStore = create<CubeStore>((set) => ({
     set({
       cubies: getInitialCubies(),
       history: [],
+      redoHistory: [],
       isAnimating: false,
       currentMove: null,
       moveQueue: [],
@@ -201,6 +231,7 @@ export const useCubeStore = create<CubeStore>((set) => ({
         currentMove: first,
         moveQueue: rest,
         history: [...state.history, first],
+        redoHistory: [],
       };
     });
   },

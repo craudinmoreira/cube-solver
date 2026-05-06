@@ -1,9 +1,9 @@
 import React from "react";
 import { useCubeStore } from "../../store/useCubeStore";
-import { Undo2, Trash2 } from "lucide-react";
+import { Undo2, Redo2, Trash2 } from "lucide-react";
 
 export const HistoryPanel: React.FC = () => {
-  const { history, undo, isAnimating, clearCubeColors } = useCubeStore();
+  const { history, redoHistory, undo, redo, isAnimating, clearCubeColors } = useCubeStore();
 
   return (
     <aside className="history-panel">
@@ -22,7 +22,6 @@ export const HistoryPanel: React.FC = () => {
             title="Limpar histórico e resetar cubo"
           >
             <Trash2 size={16} />
-            Limpar
           </button>
           <button
             onClick={undo}
@@ -31,7 +30,14 @@ export const HistoryPanel: React.FC = () => {
             title="Desfazer"
           >
             <Undo2 size={16} />
-            Desfazer
+          </button>
+          <button
+            onClick={redo}
+            disabled={redoHistory.length === 0 || isAnimating}
+            className="redo-button"
+            title="Refazer"
+          >
+            <Redo2 size={16} />
           </button>
         </div>
       </div>
