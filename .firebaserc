@@ -1,5 +1,5 @@
 {
   "projects": {
-    "default": "cube-solver-app"
+    "default": "virtual-cube-solver"
   }
 }

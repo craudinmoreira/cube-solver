@@ -5,60 +5,78 @@ export type Move =
   | "U"
   | "U'"
   | "U2"
+  | "U3"
   | "D"
   | "D'"
   | "D2"
+  | "D3"
   | "R"
   | "R'"
   | "R2"
+  | "R3"
   | "L"
   | "L'"
   | "L2"
+  | "L3"
   | "F"
   | "F'"
   | "F2"
+  | "F3"
   | "B"
   | "B'"
   | "B2"
+  | "B3"
   // Movimentos de fatia (slice)
   | "M"
   | "M'"
   | "M2"
+  | "M3"
   | "E"
   | "E'"
   | "E2"
+  | "E3"
   | "S"
   | "S'"
   | "S2"
+  | "S3"
   // Movimentos de dupla camada (wide)
   | "u"
   | "u'"
   | "u2"
+  | "u3"
   | "d"
   | "d'"
   | "d2"
+  | "d3"
   | "r"
   | "r'"
   | "r2"
+  | "r3"
   | "l"
   | "l'"
   | "l2"
+  | "l3"
   | "f"
   | "f'"
   | "f2"
+  | "f3"
   | "b"
   | "b'"
   | "b2"
+  | "b3"
   // Rotações completas do cubo
   | "X"
   | "X'"
   | "X2"
+  | "X3"
   | "Y"
   | "Y'"
   | "Y2"
+  | "Y3"
   | "Z"
   | "Z'"
-  | "Z2";
+  | "Z2"
+  | "Z3";
 
 export interface FaceColors {
   right?: string;
@@ -198,64 +216,83 @@ export const moveDetails: Record<
   U: { axis: "y", layers: [1], angle: -Math.PI / 2 },
   "U'": { axis: "y", layers: [1], angle: Math.PI / 2 },
   U2: { axis: "y", layers: [1], angle: Math.PI },
+  U3: { axis: "y", layers: [1], angle: -Math.PI * 1.5 },
   D: { axis: "y", layers: [-1], angle: Math.PI / 2 },
   "D'": { axis: "y", layers: [-1], angle: -Math.PI / 2 },
   D2: { axis: "y", layers: [-1], angle: Math.PI },
+  D3: { axis: "y", layers: [-1], angle: Math.PI * 1.5 },
   R: { axis: "x", layers: [1], angle: -Math.PI / 2 },
   "R'": { axis: "x", layers: [1], angle: Math.PI / 2 },
   R2: { axis: "x", layers: [1], angle: Math.PI },
+  R3: { axis: "x", layers: [1], angle: -Math.PI * 1.5 },
   L: { axis: "x", layers: [-1], angle: Math.PI / 2 },
   "L'": { axis: "x", layers: [-1], angle: -Math.PI / 2 },
   L2: { axis: "x", layers: [-1], angle: Math.PI },
+  L3: { axis: "x", layers: [-1], angle: Math.PI * 1.5 },
   F: { axis: "z", layers: [1], angle: -Math.PI / 2 },
   "F'": { axis: "z", layers: [1], angle: Math.PI / 2 },
   F2: { axis: "z", layers: [1], angle: Math.PI },
+  F3: { axis: "z", layers: [1], angle: -Math.PI * 1.5 },
   B: { axis: "z", layers: [-1], angle: Math.PI / 2 },
   "B'": { axis: "z", layers: [-1], angle: -Math.PI / 2 },
   B2: { axis: "z", layers: [-1], angle: Math.PI },
+  B3: { axis: "z", layers: [-1], angle: Math.PI * 1.5 },
   // --- Fatias (slice) ---
   M: { axis: "x", layers: [0], angle: Math.PI / 2 }, // mesma direção que L
   "M'": { axis: "x", layers: [0], angle: -Math.PI / 2 },
   M2: { axis: "x", layers: [0], angle: Math.PI },
+  M3: { axis: "x", layers: [0], angle: Math.PI * 1.5 },
   E: { axis: "y", layers: [0], angle: Math.PI / 2 }, // mesma direção que D
   "E'": { axis: "y", layers: [0], angle: -Math.PI / 2 },
   E2: { axis: "y", layers: [0], angle: Math.PI },
+  E3: { axis: "y", layers: [0], angle: Math.PI * 1.5 },
   S: { axis: "z", layers: [0], angle: -Math.PI / 2 }, // mesma direção que F
   "S'": { axis: "z", layers: [0], angle: Math.PI / 2 },
   S2: { axis: "z", layers: [0], angle: Math.PI },
+  S3: { axis: "z", layers: [0], angle: -Math.PI * 1.5 },
   // --- Dupla camada (wide) ---
   u: { axis: "y", layers: [0, 1], angle: -Math.PI / 2 }, // U + equatorial
   "u'": { axis: "y", layers: [0, 1], angle: Math.PI / 2 },
   u2: { axis: "y", layers: [0, 1], angle: Math.PI },
+  u3: { axis: "y", layers: [0, 1], angle: -Math.PI * 1.5 },
   d: { axis: "y", layers: [-1, 0], angle: Math.PI / 2 }, // D + equatorial
   "d'": { axis: "y", layers: [-1, 0], angle: -Math.PI / 2 },
   d2: { axis: "y", layers: [-1, 0], angle: Math.PI },
+  d3: { axis: "y", layers: [-1, 0], angle: Math.PI * 1.5 },
   r: { axis: "x", layers: [0, 1], angle: -Math.PI / 2 }, // R + middle
   "r'": { axis: "x", layers: [0, 1], angle: Math.PI / 2 },
   r2: { axis: "x", layers: [0, 1], angle: Math.PI },
+  r3: { axis: "x", layers: [0, 1], angle: -Math.PI * 1.5 },
   l: { axis: "x", layers: [-1, 0], angle: Math.PI / 2 }, // L + middle
   "l'": { axis: "x", layers: [-1, 0], angle: -Math.PI / 2 },
   l2: { axis: "x", layers: [-1, 0], angle: Math.PI },
+  l3: { axis: "x", layers: [-1, 0], angle: Math.PI * 1.5 },
   f: { axis: "z", layers: [0, 1], angle: -Math.PI / 2 }, // F + standing
   "f'": { axis: "z", layers: [0, 1], angle: Math.PI / 2 },
   f2: { axis: "z", layers: [0, 1], angle: Math.PI },
+  f3: { axis: "z", layers: [0, 1], angle: -Math.PI * 1.5 },
   b: { axis: "z", layers: [-1, 0], angle: Math.PI / 2 }, // B + standing
   "b'": { axis: "z", layers: [-1, 0], angle: -Math.PI / 2 },
   b2: { axis: "z", layers: [-1, 0], angle: Math.PI },
+  b3: { axis: "z", layers: [-1, 0], angle: Math.PI * 1.5 },
   // --- Rotações completas do cubo ---
   X: { axis: "x", layers: [-1, 0, 1], angle: -Math.PI / 2 }, // como R
   "X'": { axis: "x", layers: [-1, 0, 1], angle: Math.PI / 2 },
   X2: { axis: "x", layers: [-1, 0, 1], angle: Math.PI },
+  X3: { axis: "x", layers: [-1, 0, 1], angle: -Math.PI * 1.5 },
   Y: { axis: "y", layers: [-1, 0, 1], angle: -Math.PI / 2 }, // como U
   "Y'": { axis: "y", layers: [-1, 0, 1], angle: Math.PI / 2 },
   Y2: { axis: "y", layers: [-1, 0, 1], angle: Math.PI },
+  Y3: { axis: "y", layers: [-1, 0, 1], angle: -Math.PI * 1.5 },
   Z: { axis: "z", layers: [-1, 0, 1], angle: -Math.PI / 2 }, // como F
   "Z'": { axis: "z", layers: [-1, 0, 1], angle: Math.PI / 2 },
   Z2: { axis: "z", layers: [-1, 0, 1], angle: Math.PI },
+  Z3: { axis: "z", layers: [-1, 0, 1], angle: -Math.PI * 1.5 },
 };
 
 export const getInverseMove = (move: Move): Move => {
   if (move.endsWith("2")) return move; // 180° são auto-inversos
+  if (move.endsWith("3")) return move.replace("3", "") as Move; // 270° inverso é 90° normal
   if (move.endsWith("'")) return move.replace("'", "") as Move;
   return `${move}'` as Move;
 };
@@ -327,8 +364,8 @@ export const parseSolutionString = (
 
   for (const raw of tokens) {
     // Substitui trailing 'i' (case-sensitive: "Ri" → "R'", mas "ri" → "r'")
-    // Também aceita "2" como sufixo de meio giro (ex: "R2")
-    const token = raw.replace(/i$/, "'");
+    // Remove trailing '1' para tratar R1 como R
+    const token = raw.replace(/i$/, "'").replace(/1$/, "");
 
     if (!VALID_MOVES.has(token)) {
       return {
