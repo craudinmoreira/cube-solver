@@ -1,15 +1,16 @@
 import React, { useState } from "react";
+import { Grid3x3 } from "lucide-react";
 import { useCubeStore } from "../../store/useCubeStore";
 import { validateCubeStateString, CUBE_COLOR_MAP } from "../../utils/cubeLogic";
 
 // Legenda de cores para guiar o usuário
 const COLOR_LEGEND = [
-  { char: "W", label: "Branco", hex: CUBE_COLOR_MAP["W"] },
-  { char: "Y", label: "Amarelo", hex: CUBE_COLOR_MAP["Y"] },
-  { char: "R", label: "Vermelho", hex: CUBE_COLOR_MAP["R"] },
-  { char: "O", label: "Laranja", hex: CUBE_COLOR_MAP["O"] },
-  { char: "G", label: "Verde", hex: CUBE_COLOR_MAP["G"] },
-  { char: "B", label: "Azul", hex: CUBE_COLOR_MAP["B"] },
+  { char: "W", label: "Branco" },
+  { char: "Y", label: "Amarelo" },
+  { char: "R", label: "Vermelho" },
+  { char: "O", label: "Laranja" },
+  { char: "G", label: "Verde" },
+  { char: "B", label: "Azul" },
 ];
 
 export const CubeStateInput: React.FC = () => {
@@ -32,105 +33,84 @@ export const CubeStateInput: React.FC = () => {
     clearCubeColors();
   };
 
-  // Colorize cada char do input com a cor correspondente
-  const renderColorizedInput = () => {
-    if (!normalized) return null;
-    return (
-      <div className="cube-state-preview">
-        {normalized.split("").map((ch, i) => (
-          <span
-            key={i}
-            className="cube-state-char"
-            style={{
-              backgroundColor: CUBE_COLOR_MAP[ch] ?? "transparent",
-              color: ch === "W" ? "#333" : "#1a1a1a",
-            }}
-          >
-            {ch}
-          </span>
-        ))}
-      </div>
-    );
-  };
-
   return (
-    <div className="state-input-panel">
-      <h3>Estado do Cubo</h3>
+    <section className="card">
+      <div className="card-header">
+        <h3 className="card-title">
+          <Grid3x3 size={17} />
+          Estado do cubo
+        </h3>
+      </div>
 
-      <p className="state-input-hint">
-        Insira os 54 caracteres representando cada face do cubo na ordem:
-        <br />
-        <strong>U (9) · L F R B (36) · D (9)</strong>
+      <p className="card-hint">
+        54 cores na ordem <strong>U (9) · L F R B (36) · D (9)</strong>.
       </p>
 
-      {/* Legenda de cores */}
       <div className="color-legend">
-        {COLOR_LEGEND.map(({ char, label, hex }) => (
+        {COLOR_LEGEND.map(({ char, label }) => (
           <span key={char} className="color-legend-item">
             <span
               className="color-legend-dot"
-              style={{
-                backgroundColor: hex,
-                border: char === "W" ? "1px solid #aaa" : "none",
-              }}
+              style={{ backgroundColor: CUBE_COLOR_MAP[char] }}
             />
-            <span className="color-legend-text">
-              {char} = {label}
-            </span>
+            <b>{char}</b>
+            {label}
           </span>
         ))}
       </div>
 
-      <textarea
-        className={`state-input-textarea ${error && normalized.length > 0 ? "state-input-error" : ""} ${isValid ? "state-input-ok" : ""}`}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Ex: OOOOOOOOOYYYWWWGGGBBB..."
-        rows={4}
-        spellCheck={false}
-      />
-
-      {/* Contador de caracteres */}
-      <div className="state-input-counter">
-        <span
-          className={
-            normalized.length === 54 ? "counter-ok" : "counter-neutral"
-          }
-        >
-          {normalized.length}/54 caracteres
+      <div className="field">
+        <textarea
+          id="cube-state-input"
+          className={`textarea ${error ? "is-error" : ""} ${isValid ? "is-ok" : ""}`}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ex: WWWWWWWWWOOOGGGRRRBBB…"
+          rows={3}
+          spellCheck={false}
+          aria-label="Estado do cubo, 54 caracteres"
+        />
+        <span className={`field-counter ${normalized.length === 54 ? "is-ok" : ""}`}>
+          {normalized.length}/54
         </span>
       </div>
 
-      {/* Mensagem de erro */}
-      {error && normalized.length > 0 && (
-        <p className="state-input-error-msg">{error}</p>
+      {error && (
+        <p className="field-error" role="alert">
+          {error}
+        </p>
       )}
 
-      {/* Preview colorido */}
-      {normalized.length > 0 && renderColorizedInput()}
+      {/* Prévia colorida, um quadrado por caractere */}
+      {normalized.length > 0 && (
+        <div className="state-preview" aria-hidden="true">
+          {normalized.split("").map((ch, i) => (
+            <i
+              key={i}
+              className={CUBE_COLOR_MAP[ch] ? "" : "is-invalid"}
+              style={{ backgroundColor: CUBE_COLOR_MAP[ch] ?? "transparent" }}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Botões */}
-      <div className="state-input-buttons">
+      <div className="btn-row">
         <button
-          className="state-apply-button"
+          className="btn btn-primary"
           onClick={handleApply}
           disabled={!isValid}
-          title={
-            isValid
-              ? "Aplicar cores ao cubo"
-              : "Corrija os erros antes de aplicar"
-          }
+          title={isValid ? "Aplicar cores ao cubo" : "Corrija os erros antes de aplicar"}
         >
-          Aplicar Cores
+          Aplicar cores
         </button>
         <button
-          className="state-clear-button"
+          className="btn"
           onClick={handleClear}
           title="Limpar input e restaurar cores padrão"
         >
           Resetar
         </button>
       </div>
-    </div>
+    </section>
   );
 };

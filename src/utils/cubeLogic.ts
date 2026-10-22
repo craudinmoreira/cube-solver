@@ -378,3 +378,71 @@ export const parseSolutionString = (
 
   return { moves, error: null };
 };
+
+/** Formata um movimento para exibição, trocando o apóstrofo pelo símbolo de prime (R' → R′). */
+export const formatMove = (move: string): string => move.replace("'", "′");
+
+// Letra de cor de cada face no cubo resolvido (mesma paleta de Cubie.tsx)
+const FACE_COLOR_LETTER: Record<string, string> = {
+  U: "W",
+  D: "Y",
+  R: "R",
+  L: "O",
+  F: "G",
+  B: "B",
+};
+
+/**
+ * Cor da face girada por um movimento (R, R', r, r2 → vermelho).
+ * Fatias e rotações do cubo inteiro não têm uma face própria e retornam undefined.
+ */
+export const getMoveFaceColor = (move: string): string | undefined => {
+  const base = move[0];
+  if (!/[UDRLFBudrlfb]/.test(base)) return undefined;
+  return CUBE_COLOR_MAP[FACE_COLOR_LETTER[base.toUpperCase()]];
+};
+
+const STICKER_FACES: {
+  key: keyof FaceColors;
+  normal: [number, number, number];
+  fallback: string;
+}[] = [
+  { key: "right", normal: [1, 0, 0], fallback: CUBE_COLOR_MAP.R },
+  { key: "left", normal: [-1, 0, 0], fallback: CUBE_COLOR_MAP.O },
+  { key: "top", normal: [0, 1, 0], fallback: CUBE_COLOR_MAP.W },
+  { key: "bottom", normal: [0, -1, 0], fallback: CUBE_COLOR_MAP.Y },
+  { key: "front", normal: [0, 0, 1], fallback: CUBE_COLOR_MAP.G },
+  { key: "back", normal: [0, 0, -1], fallback: CUBE_COLOR_MAP.B },
+];
+
+/**
+ * Verdadeiro quando cada face visível do cubo tem uma única cor.
+ * Rotações do cubo inteiro (X, Y, Z) não desfazem o estado resolvido.
+ */
+export const isCubeSolved = (cubies: CubieState[]): boolean => {
+  const colorByFace = new Map<string, string>();
+  for (const cubie of cubies) {
+    // Posição inicial derivada do id (mesma ordem de getInitialCubies)
+    const initial = [
+      Math.floor(cubie.id / 9) - 1,
+      Math.floor((cubie.id % 9) / 3) - 1,
+      (cubie.id % 3) - 1,
+    ];
+    const rotation = new THREE.Quaternion(...cubie.quaternion);
+
+    for (const face of STICKER_FACES) {
+      const axis = face.normal.findIndex((v) => v !== 0);
+      if (initial[axis] !== face.normal[axis]) continue; // sem adesivo nessa face
+
+      const worldNormal = new THREE.Vector3(...face.normal).applyQuaternion(rotation);
+      roundVector(worldNormal);
+      const faceKey = `${worldNormal.x},${worldNormal.y},${worldNormal.z}`;
+      const color = cubie.faceColors?.[face.key] ?? face.fallback;
+
+      const seen = colorByFace.get(faceKey);
+      if (seen === undefined) colorByFace.set(faceKey, color);
+      else if (seen !== color) return false;
+    }
+  }
+  return true;
+};

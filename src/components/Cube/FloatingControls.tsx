@@ -24,29 +24,35 @@ export const FloatingControls: React.FC = () => {
         className="floating-button"
         onClick={shuffle}
         disabled={isBusy}
-        title="Embaralhar Aleatoriamente"
+        aria-label="Embaralhar aleatoriamente"
+        title="Embaralhar aleatoriamente"
       >
-        <Shuffle size={20} />
+        <Shuffle size={19} />
       </button>
       <button
         className="floating-button"
         onClick={reset}
         disabled={isBusy || history.length === 0}
-        title="Resetar Cubo"
+        aria-label="Resetar cubo"
+        title="Resetar cubo"
       >
-        <RotateCcw size={20} />
+        <RotateCcw size={19} />
       </button>
       <button
-        className="floating-button"
+        className={`floating-button ${showFaceLabels ? "is-active" : ""}`}
         onClick={toggleFaceLabels}
-        title={showFaceLabels ? "Ocultar Faces" : "Mostrar Faces"}
+        aria-pressed={showFaceLabels}
+        aria-label={showFaceLabels ? "Ocultar letras das faces" : "Mostrar letras das faces"}
+        title={showFaceLabels ? "Ocultar letras das faces" : "Mostrar letras das faces"}
       >
-        {showFaceLabels ? <EyeOff size={20} /> : <Eye size={20} />}
+        {showFaceLabels ? <EyeOff size={19} /> : <Eye size={19} />}
       </button>
 
+      <span className="floating-divider" />
+
       {/* Controle de velocidade */}
-      <div className="floating-speed" title="Velocidade da animação">
-        <Gauge size={16} className="speed-icon" />
+      <label className="floating-speed" title="Velocidade da animação">
+        <Gauge size={16} aria-hidden="true" />
         <input
           type="range"
           min={0.5}
@@ -55,10 +61,10 @@ export const FloatingControls: React.FC = () => {
           value={speed}
           onChange={(e) => setSpeed(Number(e.target.value))}
           className="speed-slider"
-          title={`Velocidade: ${speed}×`}
+          aria-label="Velocidade da animação"
         />
         <span className="speed-label">{speed}×</span>
-      </div>
+      </label>
     </div>
   );
 };
