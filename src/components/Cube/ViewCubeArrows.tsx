@@ -6,85 +6,62 @@ interface ViewCubeArrowsProps {
 }
 
 export const ViewCubeArrows: React.FC<ViewCubeArrowsProps> = ({ onRotate }) => {
-
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        width: '100px',
-        height: '100px',
-        transform: 'translate(-50%, -50%)',
-        pointerEvents: 'none',
-        zIndex: 100,
-      }}
-    >
+    <div className="viewcube-arrows">
       <button
-        style={{ ...baseBtnStyle, top: '-20px', left: '50%', transform: 'translateX(-50%)' }}
+        className="viewcube-btn up"
         onClick={() => onRotate('x', 1)}
-        title="Rotate Up"
+        aria-label="Girar visão para cima"
+        title="Girar visão para cima"
       >
         <ChevronUp size={16} />
       </button>
-      
+
       <button
-        style={{ ...baseBtnStyle, bottom: '-20px', left: '50%', transform: 'translateX(-50%)' }}
+        className="viewcube-btn down"
         onClick={() => onRotate('x', -1)}
-        title="Rotate Down"
+        aria-label="Girar visão para baixo"
+        title="Girar visão para baixo"
       >
         <ChevronDown size={16} />
       </button>
-      
+
       <button
-        style={{ ...baseBtnStyle, top: '50%', left: '-20px', transform: 'translateY(-50%)' }}
+        className="viewcube-btn left"
         onClick={() => onRotate('y', -1)}
-        title="Rotate Left"
+        aria-label="Girar visão para a esquerda"
+        title="Girar visão para a esquerda"
       >
         <ChevronLeft size={16} />
       </button>
-      
+
       <button
-        style={{ ...baseBtnStyle, top: '50%', right: '-20px', transform: 'translateY(-50%)' }}
+        className="viewcube-btn right"
         onClick={() => onRotate('y', 1)}
-        title="Rotate Right"
+        aria-label="Girar visão para a direita"
+        title="Girar visão para a direita"
       >
         <ChevronRight size={16} />
       </button>
-      
-      {/* Curved arrows for roll */}
+
+      {/* Setas curvas para rolagem */}
       <button
-        style={{ ...baseBtnStyle, top: '-15px', right: '-15px', borderRadius: '50%' }}
+        className="viewcube-btn is-round roll-right"
         onClick={() => onRotate('z', -1)}
-        title="Roll Right"
+        aria-label="Rolar visão no sentido horário"
+        title="Rolar visão no sentido horário"
       >
         <RotateCw size={14} />
       </button>
 
       <button
-        style={{ ...baseBtnStyle, top: '-15px', left: '-15px', borderRadius: '50%' }}
+        className="viewcube-btn is-round roll-left"
         onClick={() => onRotate('z', 1)}
-        title="Roll Left"
+        aria-label="Rolar visão no sentido anti-horário"
+        title="Rolar visão no sentido anti-horário"
       >
         <RotateCcw size={14} />
       </button>
     </div>
   );
-};
-
-const baseBtnStyle: React.CSSProperties = {
-  position: 'absolute',
-  pointerEvents: 'auto',
-  background: 'rgba(255, 255, 255, 0.9)',
-  border: '1px solid rgba(0, 0, 0, 0.1)',
-  borderRadius: '6px',
-  width: '26px',
-  height: '26px',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  cursor: 'pointer',
-  color: '#333',
-  boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
-  transition: 'background 0.2s, transform 0.1s',
 };

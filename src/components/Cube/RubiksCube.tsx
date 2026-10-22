@@ -9,15 +9,25 @@ import {
 import * as THREE from "three";
 import { useCubeStore } from "../../store/useCubeStore";
 import { useAnimationSpeed } from "../../store/useAnimationSpeed";
+import { useThemeStore } from "../../store/useThemeStore";
 import { Cubie } from "./Cubie";
 import { ViewCubeArrows } from "./ViewCubeArrows";
 import { TrackballControls as TrackballControlsImpl } from "three-stdlib";
 import { moveDetails } from "../../utils/cubeLogic";
 
+// Cores do view cube por tema (espelham os tokens de global.css)
+const VIEWCUBE_COLORS = {
+  dark: { color: "#4a5180", hoverColor: "#8f9bff", textColor: "#ffffff", strokeColor: "#6b73a8" },
+  light: { color: "#c9cff5", hoverColor: "#4b59e6", textColor: "#1b1e33", strokeColor: "#8e97d8" },
+};
+// Ordem esperada pelo GizmoViewcube: direita, esquerda, cima, baixo, frente, trás
+const VIEWCUBE_FACES = ["R", "L", "U", "D", "F", "B"];
+
 export const RubiksCube: React.FC = () => {
   const { cubies, isAnimating, currentMove, finishAnimation, showFaceLabels } =
     useCubeStore();
   const { speed } = useAnimationSpeed();
+  const theme = useThemeStore((state) => state.theme);
   const animatingGroupRef = useRef<THREE.Group>(null);
   const controlsRef = useRef<TrackballControlsImpl>(null);
   const { camera, invalidate } = useThree();
@@ -243,7 +253,12 @@ export const RubiksCube: React.FC = () => {
       />
 
       <GizmoHelper alignment="top-right" margin={[80, 80]}>
-        <GizmoViewcube />
+        <GizmoViewcube
+          key={theme}
+          {...VIEWCUBE_COLORS[theme]}
+          faces={VIEWCUBE_FACES}
+          font="700 40px 'JetBrains Mono', ui-monospace, monospace"
+        />
         <Html center style={{ pointerEvents: "none" }}>
           <ViewCubeArrows onRotate={handleRotateView} />
         </Html>
