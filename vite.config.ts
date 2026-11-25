@@ -16,6 +16,25 @@ const globalHeaders = Object.fromEntries(
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    // O chunk do Three.js (~720 KB, ~180 KB gzip) é esperado; o orçamento real
+    // fica em scripts/check-bundle-size.mjs.
+    chunkSizeWarningLimit: 800,
+    rolldownOptions: {
+      output: {
+        // Vendors em chunks próprios: mudam pouco, então o cache do navegador
+        // sobrevive aos deploys do app. A cena 3D já é carregada sob demanda.
+        codeSplitting: {
+          groups: [
+            // A interface (React + estado) é o caminho inicial; Three.js e R3F só a cena.
+            { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler|zustand|use-sync-external-store)[\\/]/, priority: 30 },
+            { name: 'three', test: /node_modules[\\/]three[\\/]/, priority: 20 },
+            { name: 'r3f', test: /node_modules[\\/](@react-three|three-stdlib|camera-controls|troika-|its-fine|suspend-react|maath|meshline|stats-gl|detect-gpu|hls\.js)/, priority: 10 },
+          ],
+        },
+      },
+    },
+  },
   preview: {
     headers: globalHeaders,
   },

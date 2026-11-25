@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import {
   TrackballControls,
@@ -7,12 +7,13 @@ import {
   GizmoViewcube,
 } from "@react-three/drei";
 import * as THREE from "three";
+import { useShallow } from "zustand/react/shallow";
 import { useCubeStore } from "../../store/useCubeStore";
 import { useAnimationSpeed } from "../../store/useAnimationSpeed";
 import { useThemeStore } from "../../store/useThemeStore";
 import { Cubie } from "./Cubie";
 import { ViewCubeArrows } from "./ViewCubeArrows";
-import { TrackballControls as TrackballControlsImpl } from "three-stdlib";
+import type { TrackballControls as TrackballControlsImpl } from "three-stdlib";
 import { moveDetails } from "../../utils/cubeLogic";
 
 // Cores do view cube por tema (espelham os tokens de global.css)
@@ -23,10 +24,29 @@ const VIEWCUBE_COLORS = {
 // Ordem esperada pelo GizmoViewcube: direita, esquerda, cima, baixo, frente, trás
 const VIEWCUBE_FACES = ["R", "L", "U", "D", "F", "B"];
 
+type Vec3 = [number, number, number];
+const FACE_LABELS: { face: string; position: Vec3; rotation: Vec3 }[] = [
+  { face: "U", position: [0, 2.2, 0], rotation: [-Math.PI / 2, 0, 0] },
+  { face: "D", position: [0, -2.2, 0], rotation: [Math.PI / 2, 0, 0] },
+  { face: "R", position: [2.2, 0, 0], rotation: [0, Math.PI / 2, 0] },
+  { face: "L", position: [-2.2, 0, 0], rotation: [0, -Math.PI / 2, 0] },
+  { face: "F", position: [0, 0, 2.2], rotation: [0, 0, 0] },
+  { face: "B", position: [0, 0, -2.2], rotation: [0, Math.PI, 0] },
+];
+
 export const RubiksCube: React.FC = () => {
+  // Só os campos usados aqui: o componente re-renderiza uma vez por movimento,
+  // não a cada mudança da store.
   const { cubies, isAnimating, currentMove, finishAnimation, showFaceLabels } =
-    useCubeStore();
-  const { speed } = useAnimationSpeed();
+    useCubeStore(
+      useShallow((s) => ({
+        cubies: s.cubies,
+        isAnimating: s.isAnimating,
+        currentMove: s.currentMove,
+        finishAnimation: s.finishAnimation,
+        showFaceLabels: s.showFaceLabels,
+      })),
+    );
   const theme = useThemeStore((state) => state.theme);
   const animatingGroupRef = useRef<THREE.Group>(null);
   const controlsRef = useRef<TrackballControlsImpl>(null);
@@ -74,35 +94,44 @@ export const RubiksCube: React.FC = () => {
     invalidate();
   };
 
-  // Controle de progresso da animação (de 0 a 1)
-  const [animProgress, setAnimProgress] = useState(0);
+  // Progresso da animação (0 a 1) num ref: muda a cada frame sem re-renderizar
+  // o React. A velocidade é lida direto da store pelo mesmo motivo.
+  const animProgress = useRef(0);
+  // Depois de finishAnimation(), espera o React aplicar o próximo estado antes de
+  // animar de novo: evita girar, por um frame, as peças do movimento anterior.
+  const awaitingCommit = useRef(false);
+  useLayoutEffect(() => {
+    awaitingCommit.current = false;
+  }, [cubies, currentMove, isAnimating]);
 
   useFrame((_, delta) => {
-    if (isAnimating && currentMove && animatingGroupRef.current) {
-      const nextProgress = Math.min(animProgress + delta * speed, 1);
+    const group = animatingGroupRef.current;
+    if (awaitingCommit.current || !isAnimating || !currentMove || !group) return;
 
-      const { axis, angle } = moveDetails[currentMove];
+    const speed = useAnimationSpeed.getState().speed;
+    const progress = Math.min(animProgress.current + delta * speed, 1);
+    const { axis, angle } = moveDetails[currentMove];
 
-      // Reseta a rotação do grupo para evitar soma contínua antes de setar o valor final
-      animatingGroupRef.current.rotation.set(0, 0, 0);
+    group.rotation.set(0, 0, 0);
+    group.rotation[axis] = angle * progress;
+    animProgress.current = progress;
 
-      if (axis === "x")
-        animatingGroupRef.current.rotation.x = angle * nextProgress;
-      if (axis === "y")
-        animatingGroupRef.current.rotation.y = angle * nextProgress;
-      if (axis === "z")
-        animatingGroupRef.current.rotation.z = angle * nextProgress;
-
-      setAnimProgress(nextProgress);
-
-      if (nextProgress >= 1) {
-        // Animação terminou
-        setAnimProgress(0);
-        animatingGroupRef.current.rotation.set(0, 0, 0);
-        finishAnimation();
-      }
+    if (progress >= 1) {
+      animProgress.current = 0;
+      group.rotation.set(0, 0, 0);
+      awaitingCommit.current = true;
+      finishAnimation();
     }
   });
+
+  // Separa as peças da camada que gira (filhas do grupo animado) das paradas.
+  const [staticCubies, movingCubies] = useMemo(() => {
+    if (!isAnimating || !currentMove) return [cubies, []];
+    const { axis, layers } = moveDetails[currentMove];
+    const index = axis === "x" ? 0 : axis === "y" ? 1 : 2;
+    const moving = (c: (typeof cubies)[number]) => layers.includes(Math.round(c.position[index]));
+    return [cubies.filter((c) => !moving(c)), cubies.filter(moving)];
+  }, [cubies, isAnimating, currentMove]);
 
   return (
     <>
@@ -113,134 +142,34 @@ export const RubiksCube: React.FC = () => {
       <pointLight position={[4, -4, 4]} intensity={0.4} color="#e0f0ff" />
 
       <group>
-        {cubies.map((cubie) => {
-          let isPart = false;
-          if (isAnimating && currentMove) {
-            const { axis, layers } = moveDetails[currentMove];
-            const posIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
-            isPart = layers.includes(Math.round(cubie.position[posIndex]));
-          }
-
-          // Se a peça faz parte da camada que está girando, não a renderizamos solta,
-          // renderizamos ela como filha do Animating Group abaixo.
-          if (isPart) return null;
-
-          return (
-            <Cubie
-              key={cubie.id}
-              cubieState={cubie}
-              isAnimating={isAnimating}
-              isPartOAnimatingLayer={false}
-              animatingGroupRef={animatingGroupRef}
-            />
-          );
-        })}
+        {staticCubies.map((cubie) => (
+          <Cubie key={cubie.id} cubieState={cubie} />
+        ))}
 
         {/* Grupo que sofre a rotação animada */}
         <group ref={animatingGroupRef}>
-          {isAnimating &&
-            currentMove &&
-            cubies.map((cubie) => {
-              const { axis, layers } = moveDetails[currentMove];
-              const posIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
-              const isPart = layers.includes(
-                Math.round(cubie.position[posIndex]),
-              );
-
-              if (!isPart) return null;
-
-              return (
-                <Cubie
-                  key={cubie.id}
-                  cubieState={cubie}
-                  isAnimating={true}
-                  isPartOAnimatingLayer={true}
-                  animatingGroupRef={animatingGroupRef}
-                />
-              );
-            })}
+          {movingCubies.map((cubie) => (
+            <Cubie key={cubie.id} cubieState={cubie} />
+          ))}
         </group>
       </group>
 
+      {/* Letras das faces. O occlude (raycast a cada frame) só liga quando visíveis. */}
       <group>
-        <Html
-          position={[0, 2.2, 0]}
-          center
-          transform
-          rotation={[-Math.PI / 2, 0, 0]}
-          occlude
-        >
-          <div
-            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
+        {FACE_LABELS.map(({ face, position, rotation }) => (
+          <Html
+            key={face}
+            position={position}
+            rotation={rotation}
+            center
+            transform
+            occlude={showFaceLabels}
           >
-            U
-          </div>
-        </Html>
-        <Html
-          position={[0, -2.2, 0]}
-          center
-          transform
-          rotation={[Math.PI / 2, 0, 0]}
-          occlude
-        >
-          <div
-            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
-          >
-            D
-          </div>
-        </Html>
-        <Html
-          position={[2.2, 0, 0]}
-          center
-          transform
-          rotation={[0, Math.PI / 2, 0]}
-          occlude
-        >
-          <div
-            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
-          >
-            R
-          </div>
-        </Html>
-        <Html
-          position={[-2.2, 0, 0]}
-          center
-          transform
-          rotation={[0, -Math.PI / 2, 0]}
-          occlude
-        >
-          <div
-            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
-          >
-            L
-          </div>
-        </Html>
-        <Html
-          position={[0, 0, 2.2]}
-          center
-          transform
-          rotation={[0, 0, 0]}
-          occlude
-        >
-          <div
-            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
-          >
-            F
-          </div>
-        </Html>
-        <Html
-          position={[0, 0, -2.2]}
-          center
-          transform
-          rotation={[0, Math.PI, 0]}
-          occlude
-        >
-          <div
-            className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}
-          >
-            B
-          </div>
-        </Html>
+            <div className={`face-label ${showFaceLabels ? "visible" : "hidden"}`}>
+              {face}
+            </div>
+          </Html>
+        ))}
       </group>
 
       <TrackballControls

@@ -987,3 +987,13 @@ code {
     order: 2;
   }
 }
+
+/* ── Carregamento da cena 3D ───────────────────────────────────────── */
+.scene-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}

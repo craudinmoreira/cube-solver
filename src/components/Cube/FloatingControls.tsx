@@ -1,22 +1,21 @@
 import React from "react";
 import { Shuffle, RotateCcw, Eye, EyeOff, Gauge } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useCubeStore } from "../../store/useCubeStore";
 import { useAnimationSpeed } from "../../store/useAnimationSpeed";
 
 export const FloatingControls: React.FC = () => {
-  const {
-    shuffle,
-    reset,
-    isAnimating,
-    moveQueue,
-    isResetting,
-    history,
-    toggleFaceLabels,
-    showFaceLabels,
-  } = useCubeStore();
+  const { shuffle, reset, isBusy, hasHistory, toggleFaceLabels, showFaceLabels } = useCubeStore(
+    useShallow((s) => ({
+      shuffle: s.shuffle,
+      reset: s.reset,
+      isBusy: s.isAnimating || s.moveQueue.length > 0 || s.isResetting,
+      hasHistory: s.history.length > 0,
+      toggleFaceLabels: s.toggleFaceLabels,
+      showFaceLabels: s.showFaceLabels,
+    })),
+  );
   const { speed, setSpeed } = useAnimationSpeed();
-
-  const isBusy = isAnimating || moveQueue.length > 0 || isResetting;
 
   return (
     <div className="floating-controls">
@@ -32,7 +31,7 @@ export const FloatingControls: React.FC = () => {
       <button
         className="floating-button"
         onClick={reset}
-        disabled={isBusy || history.length === 0}
+        disabled={isBusy || !hasHistory}
         aria-label="Resetar cubo"
         title="Resetar cubo"
       >

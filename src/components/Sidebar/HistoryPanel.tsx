@@ -1,10 +1,20 @@
 import React, { useEffect, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useCubeStore } from "../../store/useCubeStore";
 import { formatMove } from "../../utils/cubeLogic";
 import { Box, History, Undo2, Redo2, Trash2 } from "lucide-react";
 
 export const HistoryPanel: React.FC = () => {
-  const { history, redoHistory, undo, redo, isAnimating, clearCubeColors } = useCubeStore();
+  const { history, redoHistory, undo, redo, isAnimating, clearCubeColors } = useCubeStore(
+    useShallow((s) => ({
+      history: s.history,
+      redoHistory: s.redoHistory,
+      undo: s.undo,
+      redo: s.redo,
+      isAnimating: s.isAnimating,
+      clearCubeColors: s.clearCubeColors,
+    })),
+  );
   const listRef = useRef<HTMLUListElement>(null);
 
   // Mantém o movimento mais recente visível
