@@ -56,4 +56,4 @@ gh run list --workflow release.yml --limit 1
 gh run watch <id>
 ```
 
-Confirme a tag, a GitHub Release com o link "No ar em …" e o modal "Novidades" em produção. Se algo quebrar: rollback com **Deploy production (manual)** e a tag anterior (`docs/deploy.md`).
+Confirme a tag, a GitHub Release com o link "No ar em …" e o modal "Novidades" em produção. Se algo quebrar: rollback com **Deploy production (manual)** rodando a partir da tag anterior (`docs/deploy.md`).
