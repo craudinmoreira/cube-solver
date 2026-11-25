@@ -55,3 +55,6 @@ gha-creds-*.json
 coverage/
 playwright-report/
 test-results/
+
+# Claude Code: configuração pessoal (a do projeto é .claude/settings.json)
+.claude/settings.local.json
