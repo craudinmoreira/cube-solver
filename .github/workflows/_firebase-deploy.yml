@@ -58,10 +58,12 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
+      # Sem cache do npm de propósito: a ref vem de input (PR, tag) e um cache
+      # compartilhado com a master poderia ser envenenado (CodeQL cache-poisoning).
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-          cache: npm
+          package-manager-cache: false
       - run: npm ci
       - name: Build
         env:
