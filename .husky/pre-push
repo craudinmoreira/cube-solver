@@ -1,0 +1,3 @@
+# Mesmo gate do CI, versão rápida: tipos + testes unitários com cobertura.
+npm run typecheck
+npm run test:coverage -- --silent

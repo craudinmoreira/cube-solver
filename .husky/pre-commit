@@ -1,0 +1,3 @@
+# Bloqueia segredos antes de virarem commit, depois lint + testes relacionados.
+scripts/gitleaks.sh staged
+npx lint-staged
