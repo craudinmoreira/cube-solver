@@ -1,0 +1,28 @@
+name: Bug
+description: Algo não funciona como deveria
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: O que aconteceu
+      description: O que você fez, o que esperava e o que aconteceu.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Como reproduzir
+      placeholder: |
+        1. Cole o estado …
+        2. Execute a sequência …
+  - type: input
+    id: version
+    attributes:
+      label: Versão
+      description: O chip vX.Y.Z no canto superior direito do app.
+  - type: input
+    id: browser
+    attributes:
+      label: Navegador e aparelho
+      placeholder: Chrome 140, Android

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Vulnerabilidade de segurança
+    url: https://github.com/craudinmoreira/cube-solver/security/advisories/new
+    about: Reporte em privado, nunca numa issue pública.

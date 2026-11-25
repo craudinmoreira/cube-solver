@@ -9,6 +9,12 @@
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /></a>
     <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase" /></a>
   </p>
+  <p>
+    <a href="https://github.com/craudinmoreira/cube-solver/actions/workflows/ci.yml"><img src="https://github.com/craudinmoreira/cube-solver/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+    <a href="https://github.com/craudinmoreira/cube-solver/actions/workflows/codeql.yml"><img src="https://github.com/craudinmoreira/cube-solver/actions/workflows/codeql.yml/badge.svg" alt="CodeQL" /></a>
+    <a href="https://github.com/craudinmoreira/cube-solver/releases"><img src="https://img.shields.io/github/v/release/craudinmoreira/cube-solver" alt="Release" /></a>
+  </p>
+  <p><a href="https://virtual-cube-solver.web.app"><strong>▶ Open the app</strong></a></p>
 </div>
 
 ---
@@ -51,29 +57,36 @@ The application supports standard Singmaster notation:
 - **3D Rendering:** [Three.js](https://threejs.org/) via [@react-three/fiber](https://docs.pmnd.rs/react-three-fiber) & [@react-three/drei](https://github.com/pmndrs/drei)
 - **State Management:** [Zustand](https://github.com/pmndrs/zustand)
 - **Styling:** Vanilla CSS
-- **Tooling:** Vite, TypeScript, ESLint
-- **Hosting:** Firebase Hosting
+- **Tooling:** Vite, TypeScript, ESLint, Vitest, Playwright
+- **Hosting:** Firebase Hosting (CSP, keyless OIDC deploys)
 
 ---
 
 ## 🚀 Running Locally
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/virtual-cube-solver.git
-   cd virtual-cube-solver
-   ```
+```bash
+git clone https://github.com/craudinmoreira/cube-solver.git
+cd cube-solver
+nvm install && npm install   # also installs the git hooks
+npm run dev                  # http://localhost:5173
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+| Task | Command |
+| :--- | :--- |
+| Unit tests (+ coverage) | `npm run test:coverage` |
+| E2E (Playwright) | `npm run test:e2e` or `npm run test:e2e:docker` |
+| Lint / types | `npm run lint` · `npm run typecheck` |
+| Build + bundle budget | `npm run build && npm run size` |
 
-3. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
+---
 
-4. Open your browser and navigate to `http://localhost:5173`.
+## 🧭 Development
 
+Every change goes through a pull request with a required quality gate (lint, types, tests with a coverage floor, E2E under the production CSP, bundle budget, secret scanning, dependency audit, CodeQL). Merges land on a staging channel; production ships only from a reviewed release. Release notes are written in Portuguese for users and shown in the app.
 
+- [`AGENTS.md`](AGENTS.md): project rules for people and AI agents
+- [`CONTRIBUTING.md`](CONTRIBUTING.md): how to contribute
+- [`docs/ai-workflow.md`](docs/ai-workflow.md): AI-assisted development
+- [`docs/deploy.md`](docs/deploy.md): deploys and self-hosted runner
+- [`docs/releases.md`](docs/releases.md): releases and release notes
+- [`SECURITY.md`](SECURITY.md): security policy
