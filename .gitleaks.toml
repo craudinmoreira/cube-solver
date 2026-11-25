@@ -1,0 +1,23 @@
+# Configuração do gitleaks: usada no hook de pre-commit e no CI.
+# Regras padrão + regras deste projeto. Falso positivo? Adicione o
+# fingerprint em .gitleaksignore (nunca desative uma regra inteira).
+title = "cube-solver"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "gcp-service-account"
+description = "Chave JSON de service account do Google Cloud / Firebase"
+regex = '''"type"\s*:\s*"service_account"'''
+keywords = ["service_account"]
+
+[[rules]]
+id = "firebase-ci-token"
+description = "Token legado do firebase login:ci"
+regex = '''1//0[0-9A-Za-z_-]{30,}'''
+keywords = ["1//0"]
+
+[allowlist]
+description = "Arquivos gerados sem segredos"
+paths = ['''package-lock\.json''']
