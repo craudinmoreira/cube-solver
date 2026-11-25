@@ -1,4 +1,12 @@
-import * as THREE from "three";
+import {
+  AXIS_VECTORS,
+  quatFromAxisAngle,
+  quatMultiply,
+  quatNormalize,
+  roundVec3,
+  rotateVec3,
+  type Vec3,
+} from "./quat";
 
 export type Move =
   // Movimentos básicos de face
@@ -297,44 +305,26 @@ export const getInverseMove = (move: Move): Move => {
   return `${move}'` as Move;
 };
 
-// Arredonda para evitar erros de ponto flutuante (-0.0000001 -> 0)
-const roundVector = (v: THREE.Vector3) => {
-  v.x = Math.round(v.x);
-  v.y = Math.round(v.y);
-  v.z = Math.round(v.z);
-};
-
 export const applyRotationToCubies = (
   cubies: CubieState[],
   move: Move,
 ): CubieState[] => {
   const { axis, layers, angle } = moveDetails[move];
-  const axisVector = new THREE.Vector3(
-    axis === "x" ? 1 : 0,
-    axis === "y" ? 1 : 0,
-    axis === "z" ? 1 : 0,
-  );
-  const quaternion = new THREE.Quaternion().setFromAxisAngle(axisVector, angle);
+  const quaternion = quatFromAxisAngle(AXIS_VECTORS[axis], angle);
 
   return cubies.map((cubie) => {
     // Apenas cubies nas camadas selecionadas são afetados
     const posIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
     if (!layers.includes(Math.round(cubie.position[posIndex]))) return cubie;
 
-    // Atualiza a posição (gira ao redor do centro 0,0,0)
-    const pos = new THREE.Vector3(...cubie.position);
-    pos.applyQuaternion(quaternion);
-    roundVector(pos);
-
-    // Atualiza a rotação (quaternion) do próprio cubie
-    const currentQuat = new THREE.Quaternion(...cubie.quaternion);
-    const newQuat = quaternion.clone().multiply(currentQuat);
-    newQuat.normalize();
+    // Gira a posição ao redor do centro (0,0,0) e compõe a orientação da peça
+    const position = roundVec3(rotateVec3(cubie.position, quaternion));
+    const orientation = quatNormalize(quatMultiply(quaternion, cubie.quaternion));
 
     return {
       ...cubie,
-      position: [pos.x, pos.y, pos.z],
-      quaternion: [newQuat.x, newQuat.y, newQuat.z, newQuat.w],
+      position,
+      quaternion: orientation,
     };
   });
 };
@@ -404,7 +394,7 @@ export const getMoveFaceColor = (move: string): string | undefined => {
 
 const STICKER_FACES: {
   key: keyof FaceColors;
-  normal: [number, number, number];
+  normal: Vec3;
   fallback: string;
 }[] = [
   { key: "right", normal: [1, 0, 0], fallback: CUBE_COLOR_MAP.R },
@@ -428,15 +418,12 @@ export const isCubeSolved = (cubies: CubieState[]): boolean => {
       Math.floor((cubie.id % 9) / 3) - 1,
       (cubie.id % 3) - 1,
     ];
-    const rotation = new THREE.Quaternion(...cubie.quaternion);
 
     for (const face of STICKER_FACES) {
       const axis = face.normal.findIndex((v) => v !== 0);
       if (initial[axis] !== face.normal[axis]) continue; // sem adesivo nessa face
 
-      const worldNormal = new THREE.Vector3(...face.normal).applyQuaternion(rotation);
-      roundVector(worldNormal);
-      const faceKey = `${worldNormal.x},${worldNormal.y},${worldNormal.z}`;
+      const faceKey = roundVec3(rotateVec3(face.normal, cubie.quaternion)).join(",");
       const color = cubie.faceColors?.[face.key] ?? face.fallback;
 
       const seen = colorByFace.get(faceKey);
