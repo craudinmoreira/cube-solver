@@ -19,7 +19,8 @@ interface ControlsProps {
 }
 
 export const Controls: React.FC<ControlsProps> = ({ compact = false }) => {
-  const { addMove, isAnimating } = useCubeStore();
+  const addMove = useCubeStore((s) => s.addMove);
+  const isAnimating = useCubeStore((s) => s.isAnimating);
   const [expanded, setExpanded] = useState(false);
   const [activeGroup, setActiveGroup] = useState(0);
 

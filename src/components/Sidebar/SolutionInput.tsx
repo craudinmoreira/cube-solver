@@ -1,11 +1,19 @@
 import React, { useState, useMemo } from "react";
 import { ListOrdered, Play } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useCubeStore } from "../../store/useCubeStore";
 import { formatMove, parseSolutionString } from "../../utils/cubeLogic";
 
 export const SolutionInput: React.FC = () => {
-  const { executeSequence, isAnimating, moveQueue, isResetting, currentMove } =
-    useCubeStore();
+  const { executeSequence, isAnimating, moveQueue, isResetting, currentMove } = useCubeStore(
+    useShallow((s) => ({
+      executeSequence: s.executeSequence,
+      isAnimating: s.isAnimating,
+      moveQueue: s.moveQueue,
+      isResetting: s.isResetting,
+      currentMove: s.currentMove,
+    })),
+  );
   const [input, setInput] = useState("");
 
   const isBusy = isAnimating || moveQueue.length > 0 || isResetting;
@@ -54,6 +62,7 @@ export const SolutionInput: React.FC = () => {
           placeholder="Ex: R U Ri Ui Ri F R2 Ui…"
           rows={3}
           spellCheck={false}
+          maxLength={2000}
           disabled={isBusy}
           aria-label="Sequência de movimentos"
         />

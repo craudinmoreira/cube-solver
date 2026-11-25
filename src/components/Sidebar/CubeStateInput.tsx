@@ -14,7 +14,8 @@ const COLOR_LEGEND = [
 ];
 
 export const CubeStateInput: React.FC = () => {
-  const { applyCubeState, clearCubeColors } = useCubeStore();
+  const applyCubeState = useCubeStore((s) => s.applyCubeState);
+  const clearCubeColors = useCubeStore((s) => s.clearCubeColors);
   const [input, setInput] = useState("");
 
   // Normaliza para maiúsculas e remove espaços
@@ -68,6 +69,7 @@ export const CubeStateInput: React.FC = () => {
           placeholder="Ex: WWWWWWWWWOOOGGGRRRBBB…"
           rows={3}
           spellCheck={false}
+          maxLength={120}
           aria-label="Estado do cubo, 54 caracteres"
         />
         <span className={`field-counter ${normalized.length === 54 ? "is-ok" : ""}`}>
