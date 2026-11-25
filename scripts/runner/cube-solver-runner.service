@@ -1,0 +1,16 @@
+# Unit systemd de usuário para manter o runner efêmero no ar.
+#   cp scripts/runner/cube-solver-runner.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now cube-solver-runner
+#   loginctl enable-linger "$USER"   # continua rodando sem sessão aberta
+[Unit]
+Description=GitHub Actions runner efêmero (cube-solver)
+After=docker.service network-online.target
+
+[Service]
+ExecStart=%h/cube-solver/scripts/runner/runner.sh run
+ExecStop=%h/cube-solver/scripts/runner/runner.sh stop
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

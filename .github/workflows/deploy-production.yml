@@ -1,0 +1,38 @@
+name: Deploy production (manual)
+
+# Publica em produção uma tag já lançada. Serve para rollback.
+# Rode A PARTIR DA TAG: Actions › Deploy production (manual) › Run workflow ›
+# "Use workflow from" › Tags › vX.Y.Z  (ou: gh workflow run deploy-production.yml --ref v1.2.0)
+# Passa pelo environment "production", que exige aprovação.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rodando a partir de uma tag vX.Y.Z
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$REF_TYPE" != tag ] || [[ ! "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Escolha uma tag vX.Y.Z em 'Use workflow from' (atual: $REF_TYPE $REF_NAME)."
+            exit 1
+          fi
+
+  deploy:
+    needs: validate
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/_firebase-deploy.yml
+    with:
+      channel: live
+      environment: production
+      trusted: true
+    secrets:
+      legacy_credentials: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIRTUAL_CUBE_SOLVER }}
