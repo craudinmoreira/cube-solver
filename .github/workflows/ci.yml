@@ -88,8 +88,10 @@ jobs:
         run: scripts/install-gitleaks.sh && PATH="$HOME/.local/bin:$PATH" scripts/gitleaks.sh history
       - name: npm audit (high+)
         run: npm audit --audit-level=high
+      # Exige o dependency graph ligado no repo (Settings › Code security).
+      # Ligue-o e crie a variável de repositório DEPENDENCY_GRAPH_ENABLED=true.
       - name: Dependency review
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && vars.DEPENDENCY_GRAPH_ENABLED == 'true'
         uses: actions/dependency-review-action@bbc44d14a204704ccc493733616cd1e93a0321ec # v5.0.1
         with:
           fail-on-severity: moderate
