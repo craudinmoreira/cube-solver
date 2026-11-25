@@ -4,6 +4,8 @@ import viteConfig from './vite.config.ts'
 export default mergeConfig(
   viteConfig,
   defineConfig({
+    // Valores fixos nos testes: não dependem do package.json nem do git
+    define: { __APP_VERSION__: JSON.stringify('1.2.0'), __APP_COMMIT__: JSON.stringify('abc1234') },
     test: {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],

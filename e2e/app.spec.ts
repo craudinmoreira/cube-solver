@@ -41,3 +41,15 @@ test('executa uma sequência e o desfaz até resolver', async ({ page, isMobile 
   await expect(page.getByText('Resolvido')).toBeVisible({ timeout: 15_000 })
   expect(errors).toEqual([])
 })
+
+test('o chip de versão abre e fecha "Novidades"', async ({ page }) => {
+  const errors = trackErrors(page)
+  await page.goto('/')
+  await page.getByRole('button', { name: /^Novidades da versão/ }).click()
+  const dialog = page.getByRole('dialog', { name: /Novidades/ })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole('link', { name: /Todas as versões/ })).toHaveAttribute('href', /\/releases$/)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+  expect(errors).toEqual([])
+})

@@ -997,3 +997,99 @@ code {
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+/* ── Versão e "Novidades" ──────────────────────────────────────────── */
+.version-chip {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 11px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: border-color 0.15s, color 0.15s;
+}
+.version-chip:hover,
+.version-chip:focus-visible {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.version-chip.has-news {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--backdrop);
+  animation: fadeIn 0.2s ease;
+}
+.modal {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: min(640px, 100%);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px var(--shadow);
+}
+.modal-body {
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.release-notes + .release-notes {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.release-notes h3 {
+  font-size: 1rem;
+  margin: 0 0 6px;
+}
+.release-notes h3 small {
+  color: var(--muted);
+  font-weight: 500;
+}
+.release-notes h4 {
+  margin: 12px 0 6px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.release-item {
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+.release-item a,
+.modal-footer a {
+  color: var(--accent);
+}
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+.modal-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.modal-footer small {
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
