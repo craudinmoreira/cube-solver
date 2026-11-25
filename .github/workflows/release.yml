@@ -1,0 +1,71 @@
+name: Release
+
+# A cada push na master, o release-please mantém aberto um "Release PR"
+# (chore(release): vX.Y.Z) com a versão calculada pelos Conventional Commits e
+# o CHANGELOG em pt-BR. Ao mergear esse PR: tag vX.Y.Z + GitHub Release com as
+# notas + deploy em produção (environment "production", que pede aprovação).
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write # labels "autorelease: pending/tagged"
+    outputs:
+      created: ${{ steps.rp.outputs.release_created }}
+      tag: ${{ steps.rp.outputs.tag_name }}
+      version: ${{ steps.rp.outputs.version }}
+    steps:
+      # Com RELEASE_PLEASE_TOKEN (PAT fine-grained: contents + pull requests), o Release PR
+      # dispara o CI normalmente. Com o GITHUB_TOKEN, o GitHub não roda workflows
+      # em PRs criados por ele, e o check obrigatório "CI ok" não apareceria.
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: rp
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # Publica o commit deste push (o merge do Release PR), que é o commit da tag.
+  deploy:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/_firebase-deploy.yml
+    with:
+      channel: live
+      environment: production
+      trusted: true
+    secrets:
+      legacy_credentials: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIRTUAL_CUBE_SOLVER }}
+
+  announce:
+    needs: [release-please, deploy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Link de produção na GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.release-please.outputs.tag }}
+          URL: ${{ needs.deploy.outputs.url }}
+        run: |
+          notes=$(gh release view "$TAG" -R "$REPO" --json body --jq .body)
+          printf '%s\n\n---\n🚀 No ar em %s\n' "$notes" "$URL" > notes.md
+          gh release edit "$TAG" -R "$REPO" --notes-file notes.md

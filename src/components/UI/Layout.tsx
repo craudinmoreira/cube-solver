@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { Sun, Moon, Menu, History, X } from "lucide-react";
 import { HistoryPanel } from "../Sidebar/HistoryPanel";
 import { Controls } from "../Cube/Controls";
@@ -9,6 +9,10 @@ import { useCubeStore } from "../../store/useCubeStore";
 import { FloatingControls } from "../Cube/FloatingControls";
 import { CubeStatus } from "../Cube/CubeStatus";
 import { CUBE_COLOR_MAP } from "../../utils/cubeLogic";
+import { useWhatsNew } from "../../release/useWhatsNew";
+
+// Só carregado quando o modal abre (traz o CHANGELOG junto).
+const WhatsNew = lazy(() => import("../Release/WhatsNew"));
 
 // Mini cubo do logotipo: uma face embaralhada
 const LOGO_STICKERS = ["W", "R", "G", "B", "Y", "O", "G", "W", "R"];
@@ -20,6 +24,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
   const historyCount = useCubeStore((state) => state.history.length);
   const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const whatsNew = useWhatsNew(__APP_VERSION__);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -61,6 +66,15 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
         </h1>
 
         <div className="header-actions">
+          <button
+            className="version-chip"
+            onClick={whatsNew.show}
+            aria-label={`Novidades da versão ${__APP_VERSION__}`}
+            title="Novidades desta versão"
+          >
+            v{__APP_VERSION__}
+          </button>
+
           <button
             className="icon-btn desktop-hide"
             onClick={() => setIsHistoryOpen((prev) => !prev)}
@@ -123,6 +137,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
           <HistoryPanel />
         </aside>
       </main>
+
+      {whatsNew.open && (
+        <Suspense fallback={null}>
+          <WhatsNew
+            version={__APP_VERSION__}
+            since={whatsNew.seenBefore}
+            onClose={whatsNew.close}
+          />
+        </Suspense>
+      )}
 
       <footer className="bottom-controls">
         <Controls compact />

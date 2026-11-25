@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "71252cd6f4ce9327ddf3c41aed1afcf57ebbaaa2",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "pull-request-title-pattern": "chore(release): v${version}",
+  "pull-request-header": "Release PR gerado pelo release-please. Revise as notas abaixo (elas vão para o CHANGELOG, para a GitHub Release e para o modal \"Novidades\" do app). Ao mergear: tag, release e deploy em produção (com aprovação).",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "cube-solver",
+      "release-as": "1.0.0",
+      "changelog-path": "CHANGELOG.md",
+      "changelog-sections": [
+        { "type": "feat", "section": "Novidades" },
+        { "type": "fix", "section": "Correções" },
+        { "type": "perf", "section": "Desempenho" },
+        { "type": "revert", "section": "Revertido" },
+        { "type": "docs", "section": "Documentação", "hidden": true },
+        { "type": "test", "section": "Testes", "hidden": true },
+        { "type": "ci", "section": "CI", "hidden": true },
+        { "type": "build", "section": "Build", "hidden": true },
+        { "type": "refactor", "section": "Refatoração", "hidden": true },
+        { "type": "style", "section": "Estilo", "hidden": true },
+        { "type": "chore", "section": "Manutenção", "hidden": true }
+      ]
+    }
+  }
+}
