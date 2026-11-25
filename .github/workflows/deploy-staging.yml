@@ -1,0 +1,25 @@
+name: Deploy staging
+
+# Cada merge na master vai para o canal fixo "staging" (não expira).
+# Produção só muda numa release (release.yml) ou por deploy manual (deploy-production.yml).
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/_firebase-deploy.yml
+    with:
+      ref: ${{ github.sha }}
+      channel: staging
+      environment: staging
+      expires: 30d
+      trusted: true
+    secrets:
+      legacy_credentials: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIRTUAL_CUBE_SOLVER }}

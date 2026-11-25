@@ -1,0 +1,56 @@
+name: Deploy preview
+
+# Um canal de preview por PR (expira em 7 dias), com o link num comentário.
+# PRs de fork não recebem credencial nenhuma: o job nem roda para eles.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/_firebase-deploy.yml
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+      channel: pr-${{ github.event.pull_request.number }}
+      environment: preview
+      expires: 7d
+      trusted: false
+    secrets:
+      legacy_credentials: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIRTUAL_CUBE_SOLVER }}
+
+  comment:
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comentário com o link (atualiza o anterior)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          URL: ${{ needs.deploy.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          marker='<!-- preview-deploy -->'
+          body="$marker
+          🔎 **Preview:** $URL
+          Commit \`${SHA:0:7}\` · expira em 7 dias"
+          id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -f body="$body" > /dev/null
+          else
+            gh api "repos/$REPO/issues/$PR/comments" -f body="$body" > /dev/null
+          fi

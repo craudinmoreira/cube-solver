@@ -1,0 +1,42 @@
+name: Deploy production (manual)
+
+# Publica uma tag já lançada em produção. Serve para rollback: rode com a tag
+# anterior. Passa pelo environment "production", que exige aprovação.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag a publicar, por exemplo v1.2.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A tag existe e segue vX.Y.Z
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Tag inválida: $TAG"; exit 1; }
+          gh api "repos/$REPO/git/ref/tags/$TAG" > /dev/null
+
+  deploy:
+    needs: validate
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/_firebase-deploy.yml
+    with:
+      ref: refs/tags/${{ inputs.tag }}
+      channel: live
+      environment: production
+      trusted: true
+      version: ${{ inputs.tag }}
+    secrets:
+      legacy_credentials: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VIRTUAL_CUBE_SOLVER }}

@@ -19,7 +19,7 @@ O Virtual Cube Solver é um webapp estático (React + Three.js) servido pelo Fir
 | Commits | gitleaks no pre-commit e no CI (`.gitleaks.toml`); secret scanning e push protection do GitHub |
 | Dependências | Dependabot semanal, `npm audit` e dependency review no CI |
 | Navegador | CSP restrita a `'self'`, `X-Frame-Options: DENY`, `nosniff`, Referrer-Policy e Permissions-Policy (`firebase.json`); fontes servidas localmente |
-| Deploy | Detalhado em `docs/security/` |
+| Deploy | OIDC sem chave, build sem credencial, produção só por release com aprovação; runner self-hosted só para eventos confiáveis (`docs/deploy.md`) |
 
 ## Histórico
 

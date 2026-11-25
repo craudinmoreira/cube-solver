@@ -1,0 +1,154 @@
+name: Firebase deploy (reutilizável)
+
+# Build + deploy num canal do Firebase Hosting. Chamado por deploy-preview,
+# deploy-staging, deploy-production e release. Separação de privilégios:
+# o build roda sem credencial nenhuma; só o job de deploy recebe o token OIDC,
+# e só faz upload do `dist` já construído.
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit, branch ou tag a publicar
+        type: string
+        required: true
+      channel:
+        description: "'live' (produção) ou o nome de um canal de preview"
+        type: string
+        required: true
+      environment:
+        description: GitHub Environment (regras de aprovação ficam nele)
+        type: string
+        required: true
+      expires:
+        description: Validade do canal de preview (ignorado em 'live')
+        type: string
+        default: 7d
+      trusted:
+        description: Evento confiável (push/tag/dispatch); pode usar o runner self-hosted
+        type: boolean
+        default: false
+      version:
+        description: Versão exibida no app (vazio = derivada do package.json)
+        type: string
+        default: ""
+    secrets:
+      legacy_credentials:
+        description: Chave JSON antiga; só usada enquanto o OIDC não estiver configurado
+        required: false
+    outputs:
+      url:
+        description: URL publicada
+        value: ${{ jobs.deploy.outputs.url }}
+
+permissions:
+  contents: read
+
+env:
+  FIREBASE_PROJECT: virtual-cube-solver
+  FIREBASE_TOOLS_VERSION: 15.37.0
+
+jobs:
+  build:
+    name: Build
+    # Runner self-hosted só para eventos confiáveis e quando ligado (vars.SELF_HOSTED_RUNNER).
+    runs-on: ${{ inputs.trusted && vars.SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","linux","x64","cube-solver"]') || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Build
+        env:
+          APP_VERSION: ${{ inputs.version }}
+          APP_COMMIT: ${{ inputs.ref }}
+        run: npm run build
+      - run: npm run size
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist-${{ inputs.channel }}
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy (${{ inputs.channel }})
+    needs: build
+    runs-on: ${{ inputs.trusted && vars.SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","linux","x64","cube-solver"]') || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.publish.outputs.url }}
+    concurrency:
+      group: firebase-${{ inputs.channel }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write # OIDC → Workload Identity Federation no GCP
+    outputs:
+      url: ${{ steps.publish.outputs.url }}
+    steps:
+      # Só os arquivos de config do Hosting; nenhum código do app roda neste job.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+          sparse-checkout: |
+            firebase.json
+            .firebaserc
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist-${{ inputs.channel }}
+          path: dist/
+
+      - name: Autenticar no GCP (OIDC, sem chave)
+        if: vars.GCP_WORKLOAD_IDENTITY_PROVIDER != ''
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      # Transição: enquanto scripts/gcp/setup-wif.sh não foi rodado, usa a chave antiga.
+      - name: Autenticar no GCP (chave JSON legada)
+        if: vars.GCP_WORKLOAD_IDENTITY_PROVIDER == ''
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          credentials_json: ${{ secrets.legacy_credentials }}
+      - name: Aviso de credencial legada
+        if: vars.GCP_WORKLOAD_IDENTITY_PROVIDER == ''
+        run: echo "::warning title=Deploy com chave JSON::Configure o OIDC (docs/deploy.md) e apague o secret FIREBASE_SERVICE_ACCOUNT_VIRTUAL_CUBE_SOLVER."
+
+      - name: Publicar
+        id: publish
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          EXPIRES: ${{ inputs.expires }}
+        run: |
+          set -euo pipefail
+          firebase() { npx --yes "firebase-tools@${FIREBASE_TOOLS_VERSION}" "$@"; }
+          if [ "$CHANNEL" = live ]; then
+            firebase deploy --only hosting --project "$FIREBASE_PROJECT" --non-interactive
+            echo "url=https://${FIREBASE_PROJECT}.web.app" >> "$GITHUB_OUTPUT"
+          else
+            firebase hosting:channel:deploy "$CHANNEL" --expires "$EXPIRES" \
+              --project "$FIREBASE_PROJECT" --non-interactive --json > deploy.json
+            url=$(node -p 'Object.values(require("./deploy.json").result)[0].url')
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Smoke test (headers de segurança no ar)
+        env:
+          URL: ${{ steps.publish.outputs.url }}
+        run: |
+          set -euo pipefail
+          headers=$(curl -fsSI --retry 5 --retry-delay 3 "$URL")
+          for h in content-security-policy x-frame-options x-content-type-options; do
+            grep -qi "^$h:" <<<"$headers" || { echo "::error::Header $h ausente em $URL"; exit 1; }
+          done
+          echo "### Publicado: $URL" >> "$GITHUB_STEP_SUMMARY"

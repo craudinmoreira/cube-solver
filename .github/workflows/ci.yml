@@ -9,6 +9,8 @@ on:
   merge_group:
   workflow_dispatch:
 
+# Runner: PRs sempre em máquinas do GitHub (código de terceiros nunca roda no
+# self-hosted). Push na master e dispatch usam o self-hosted se vars.SELF_HOSTED_RUNNER == 'true'.
 permissions:
   contents: read
 
@@ -19,7 +21,7 @@ concurrency:
 jobs:
   quality:
     name: Lint, tipos e testes
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","linux","x64","cube-solver"]') || 'ubuntu-latest' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,7 +41,7 @@ jobs:
 
   build:
     name: Build e orçamento de bundle
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","linux","x64","cube-solver"]') || 'ubuntu-latest' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -55,7 +57,7 @@ jobs:
 
   e2e:
     name: E2E (Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","linux","x64","cube-solver"]') || 'ubuntu-latest' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -77,7 +79,7 @@ jobs:
 
   security:
     name: Segredos e dependências
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","linux","x64","cube-solver"]') || 'ubuntu-latest' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
