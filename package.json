@@ -13,7 +13,10 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:docker": "docker run --rm --user \"$(id -u):$(id -g)\" -e HOME=/tmp -e CI=1 -v \"$PWD\":/app -w /app mcr.microsoft.com/playwright:v$(node -p \"require('@playwright/test/package.json').version\")-noble npx playwright test"
+    "test:e2e:docker": "docker run --rm --user \"$(id -u):$(id -g)\" -e HOME=/tmp -e CI=1 -v \"$PWD\":/app -w /app mcr.microsoft.com/playwright:v$(node -p \"require('@playwright/test/package.json').version\")-noble npx playwright test",
+    "prepare": "husky",
+    "size": "node scripts/check-bundle-size.mjs",
+    "secrets": "scripts/gitleaks.sh history"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.3.0",
@@ -27,6 +30,8 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.1",
     "@testing-library/jest-dom": "^8.0.0",
@@ -42,10 +47,15 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "husky": "^9.1.7",
     "jsdom": "^31.0.1",
+    "lint-staged": "^17.6.2",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.10",
     "vitest": "^5.1.2"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
