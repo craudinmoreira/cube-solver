@@ -6,7 +6,7 @@
 PR aberto ──► CI (gate) + preview  pr-<n>.web.app   (expira em 7 dias, link no PR)
 merge na master ──► canal staging                    (sempre a master atual)
 Release PR mergeado ──► tag vX.Y.Z ──► produção      (environment "production", com aprovação)
-rollback ──► Actions › "Deploy production (manual)" com a tag anterior
+rollback ──► Actions › "Deploy production (manual)" rodando a partir da tag anterior
 ```
 
 | Workflow | Quando | Canal | Runner |
@@ -14,9 +14,9 @@ rollback ──► Actions › "Deploy production (manual)" com a tag anterior
 | `deploy-preview.yml` | PR do próprio repo (fork e Dependabot não) | `pr-<n>` | GitHub |
 | `deploy-staging.yml` | push na `master` | `staging` | self-hosted, se ligado |
 | `release.yml` | Release PR mergeado | `live` | self-hosted, se ligado |
-| `deploy-production.yml` | manual, informando a tag | `live` | self-hosted, se ligado |
+| `deploy-production.yml` | manual, **a partir de uma tag** (`gh workflow run deploy-production.yml --ref v1.2.0`) | `live` | self-hosted, se ligado |
 
-Todos chamam `_firebase-deploy.yml`, que separa privilégios:
+Todos chamam `_firebase-deploy.yml`, que publica sempre o commit do próprio evento (não aceita ref por input, para que nenhum chamador construa código arbitrário num contexto privilegiado) e separa privilégios:
 
 1. **build**: roda o código do app **sem credencial nenhuma** e guarda o `dist/`.
 2. **deploy**: recebe o token OIDC, faz checkout só do `firebase.json` e do `.firebaserc` e publica o `dist/` pronto. Termina com um smoke test que exige os headers de segurança no ar.

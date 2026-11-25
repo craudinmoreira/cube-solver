@@ -16,7 +16,6 @@ jobs:
       id-token: write
     uses: ./.github/workflows/_firebase-deploy.yml
     with:
-      ref: ${{ github.sha }}
       channel: staging
       environment: staging
       expires: 30d
