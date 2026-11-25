@@ -38,3 +38,20 @@ skills-lock.json
 *.njsproj
 *.sln
 *.sw?
+
+# Segredos e credenciais (defesa em profundidade; o gitleaks também bloqueia)
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*service-account*.json
+*-credentials.json
+gha-creds-*.json
+.runner/
+
+# Testes
+coverage/
+playwright-report/
+test-results/
